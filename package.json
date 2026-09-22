@@ -1,0 +1,14 @@
+{
+  "name": "reward-planner",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "dev": "pnpm --recursive --parallel --if-present run dev",
+    "build": "pnpm --recursive --if-present run build",
+    "typecheck": "tsc --build --pretty false && pnpm --recursive --if-present run typecheck"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}
