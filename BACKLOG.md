@@ -78,7 +78,7 @@ Core workflows available in Expo app.
 
 ## RP-M0-01 — Initialize pnpm workspace
 
-Status: TODO
+Status: DONE
 
 Goal:
 
@@ -107,7 +107,7 @@ Do Not:
 
 ## RP-M0-02 — Create Desktop browser shell
 
-Status: TODO
+Status: DONE
 
 Goal:
 
@@ -124,7 +124,7 @@ Acceptance Criteria:
 
 ## RP-M0-03 — Create API service
 
-Status: TODO
+Status: DONE
 
 Goal:
 
@@ -140,7 +140,7 @@ Acceptance Criteria:
 
 ## RP-M0-04 — Create shared packages
 
-Status: TODO
+Status: DONE
 
 Create:
 
@@ -159,7 +159,7 @@ Acceptance Criteria:
 
 ## RP-M0-05 — Configure quality scripts
 
-Status: TODO
+Status: DONE
 
 Set up:
 
@@ -179,7 +179,7 @@ all run successfully.
 
 ## RP-M0-06 — Create environment template
 
-Status: TODO
+Status: DONE
 
 Create `.env.example`.
 
