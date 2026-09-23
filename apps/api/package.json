@@ -1,0 +1,21 @@
+{
+  "name": "@reward-planner/api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start --port 3001",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "15.5.25",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.6",
+    "@types/react": "19.1.16",
+    "@types/react-dom": "19.1.9"
+  }
+}
