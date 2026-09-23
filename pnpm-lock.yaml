@@ -14,6 +14,21 @@ importers:
 
   apps/api:
     dependencies:
+      '@reward-planner/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
+      '@reward-planner/business-constants':
+        specifier: workspace:*
+        version: link:../../packages/business-constants
+      '@reward-planner/schemas':
+        specifier: workspace:*
+        version: link:../../packages/schemas
+      '@reward-planner/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@reward-planner/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       next:
         specifier: 15.5.25
         version: 15.5.25(@babel/core@7.29.7)(@types/node@24.13.6)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -36,6 +51,21 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@reward-planner/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
+      '@reward-planner/business-constants':
+        specifier: workspace:*
+        version: link:../../packages/business-constants
+      '@reward-planner/schemas':
+        specifier: workspace:*
+        version: link:../../packages/schemas
+      '@reward-planner/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@reward-planner/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       react:
         specifier: 19.1.1
         version: 19.1.1
@@ -55,6 +85,16 @@ importers:
       vite:
         specifier: 7.1.7
         version: 7.1.7(@types/node@24.13.6)
+
+  packages/api-client: {}
+
+  packages/business-constants: {}
+
+  packages/schemas: {}
+
+  packages/types: {}
+
+  packages/utils: {}
 
 packages:
 

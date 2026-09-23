@@ -9,6 +9,11 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@reward-planner/api-client": "workspace:*",
+    "@reward-planner/business-constants": "workspace:*",
+    "@reward-planner/schemas": "workspace:*",
+    "@reward-planner/types": "workspace:*",
+    "@reward-planner/utils": "workspace:*",
     "next": "15.5.25",
     "react": "19.1.1",
     "react-dom": "19.1.1"
