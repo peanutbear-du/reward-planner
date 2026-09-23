@@ -6,9 +6,18 @@
   "scripts": {
     "dev": "pnpm --recursive --parallel --if-present run dev",
     "build": "pnpm --recursive --if-present run build",
-    "typecheck": "tsc --build --pretty false && pnpm --recursive --if-present run typecheck"
+    "typecheck": "tsc --build --pretty false && pnpm --recursive --if-present run typecheck",
+    "lint": "eslint .",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "typescript": "5.9.3"
+    "@eslint/js": "10.0.1",
+    "@next/eslint-plugin-next": "15.5.25",
+    "eslint": "10.11.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.1",
+    "vite": "7.1.7",
+    "vitest": "5.0.1"
   }
 }
