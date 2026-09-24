@@ -194,7 +194,7 @@ Rules:
 
 ## RP-M1-01 — Create initial database migration
 
-Status: TODO
+Status: DONE
 
 Tables:
 
@@ -215,7 +215,7 @@ Acceptance Criteria:
 
 ## RP-M1-02 — Configure Supabase Auth
 
-Status: TODO
+Status: DONE
 
 MVP auth:
 
