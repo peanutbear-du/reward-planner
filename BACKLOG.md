@@ -233,7 +233,7 @@ Acceptance Criteria:
 
 ## RP-M1-03 — Add RLS baseline
 
-Status: TODO
+Status: DONE
 
 Acceptance Criteria:
 
