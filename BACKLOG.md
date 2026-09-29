@@ -244,7 +244,7 @@ Acceptance Criteria:
 
 ## RP-M1-04 — Today aggregate query
 
-Status: TODO
+Status: DONE
 
 Return:
 

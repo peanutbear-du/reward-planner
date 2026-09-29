@@ -50,6 +50,9 @@ importers:
       '@reward-planner/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@supabase/supabase-js':
+        specifier: 2.117.0
+        version: 2.117.0
       next:
         specifier: 15.5.25
         version: 15.5.25(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@24.13.6)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -110,11 +113,19 @@ importers:
         specifier: 7.1.7
         version: 7.1.7(@types/node@24.13.6)
 
-  packages/api-client: {}
+  packages/api-client:
+    dependencies:
+      '@reward-planner/types':
+        specifier: workspace:*
+        version: link:../types
 
   packages/business-constants: {}
 
-  packages/schemas: {}
+  packages/schemas:
+    dependencies:
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
 
   packages/types: {}
 
