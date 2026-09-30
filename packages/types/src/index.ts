@@ -7,3 +7,10 @@ export type {
   TodayItem,
   TodayResponse,
 } from "./today";
+export type {
+  CreateTaskRequest,
+  CreateTaskResponse,
+  CreateTaskSchedule,
+  TaskDto,
+  TaskPlanningItemDto,
+} from "./task";
