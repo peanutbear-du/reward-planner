@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { createTaskRequestSchema } from "./task";
+import {
+  createTaskRequestSchema,
+  deleteTaskRequestSchema,
+  editTaskTitleRequestSchema,
+} from "./task";
 
 describe("createTaskRequestSchema", () => {
   it("trims a valid title and accepts no schedule", () => {
@@ -60,5 +64,42 @@ describe("createTaskRequestSchema", () => {
         },
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("editTaskTitleRequestSchema", () => {
+  const taskId = "10000000-0000-4000-8000-000000000001";
+
+  it("accepts a UUID and trims the title", () => {
+    expect(
+      editTaskTitleRequestSchema.parse({ taskId, title: "  Updated title  " }),
+    ).toEqual({ taskId, title: "Updated title" });
+  });
+
+  it.each([
+    { taskId: "not-a-uuid", title: "Updated title" },
+    { taskId, title: "" },
+    { taskId, title: "   " },
+    { taskId, title: "Updated title", userId: taskId },
+    { taskId, title: "Updated title", status: "completed" },
+    { taskId, title: "Updated title", schedule: null },
+  ])("rejects invalid or injected input %#", (input) => {
+    expect(editTaskTitleRequestSchema.safeParse(input).success).toBe(false);
+  });
+});
+
+describe("deleteTaskRequestSchema", () => {
+  const taskId = "10000000-0000-4000-8000-000000000001";
+
+  it("accepts only a Task UUID", () => {
+    expect(deleteTaskRequestSchema.parse({ taskId })).toEqual({ taskId });
+  });
+
+  it.each([
+    { taskId: "not-a-uuid" },
+    { taskId, userId: taskId },
+    { taskId, schedule: null },
+  ])("rejects invalid or injected input %#", (input) => {
+    expect(deleteTaskRequestSchema.safeParse(input).success).toBe(false);
   });
 });

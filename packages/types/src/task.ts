@@ -35,3 +35,26 @@ export interface CreateTaskResponse {
   };
   effects: ["task_created"];
 }
+
+export interface EditTaskTitleRequest {
+  taskId: string;
+  title: string;
+}
+
+export interface EditTaskTitleResponse {
+  data: {
+    task: TaskDto;
+  };
+  effects: ["task_updated"];
+}
+
+export interface DeleteTaskRequest {
+  taskId: string;
+}
+
+export interface DeleteTaskResponse {
+  data: {
+    taskId: string;
+  };
+  effects: ["task_deleted"];
+}

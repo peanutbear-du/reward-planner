@@ -11,6 +11,10 @@ export type {
   CreateTaskRequest,
   CreateTaskResponse,
   CreateTaskSchedule,
+  DeleteTaskRequest,
+  DeleteTaskResponse,
+  EditTaskTitleRequest,
+  EditTaskTitleResponse,
   TaskDto,
   TaskPlanningItemDto,
 } from "./task";

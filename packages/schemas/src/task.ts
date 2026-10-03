@@ -43,4 +43,19 @@ export const createTaskRequestSchema = z
   })
   .strict();
 
+export const editTaskTitleRequestSchema = z
+  .object({
+    taskId: z.string().uuid(),
+    title: z.string().transform((title) => title.trim()).pipe(z.string().min(1)),
+  })
+  .strict();
+
+export const deleteTaskRequestSchema = z
+  .object({
+    taskId: z.string().uuid(),
+  })
+  .strict();
+
 export type CreateTaskInput = z.infer<typeof createTaskRequestSchema>;
+export type EditTaskTitleInput = z.infer<typeof editTaskTitleRequestSchema>;
+export type DeleteTaskInput = z.infer<typeof deleteTaskRequestSchema>;

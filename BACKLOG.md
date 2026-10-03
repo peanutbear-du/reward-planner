@@ -271,7 +271,7 @@ Acceptance Criteria:
 
 ## RP-M1-06 — Edit Task safely
 
-Status: TODO
+Status: DONE
 
 Rules:
 
