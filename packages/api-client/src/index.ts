@@ -19,3 +19,5 @@ export {
   removeDraftTodayItem,
 } from "./draft-today";
 export type { DraftTodayCommandOptions } from "./draft-today";
+export { commitDailyPlan, CommitDailyPlanApiClientError } from "./commit-daily-plan";
+export type { CommitDailyPlanOptions } from "./commit-daily-plan";

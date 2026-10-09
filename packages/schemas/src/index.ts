@@ -16,3 +16,4 @@ export {
   upsertDraftTodayItemRequestSchema,
   removeDraftTodayItemRequestSchema,
 } from "./draft-today";
+export { commitDailyPlanRequestSchema } from "./commit-daily-plan";

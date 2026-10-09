@@ -24,3 +24,4 @@ export type {
   RemoveDraftTodayItemRequest,
   RemoveDraftTodayItemResponse,
 } from "./draft-today";
+export type { CommitDailyPlanRequest, CommitDailyPlanResponse } from "./commit-daily-plan";
