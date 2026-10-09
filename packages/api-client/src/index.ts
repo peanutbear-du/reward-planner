@@ -21,3 +21,5 @@ export {
 export type { DraftTodayCommandOptions } from "./draft-today";
 export { commitDailyPlan, CommitDailyPlanApiClientError } from "./commit-daily-plan";
 export type { CommitDailyPlanOptions } from "./commit-daily-plan";
+export { addLater, AddLaterApiClientError } from "./add-later";
+export type { AddLaterOptions } from "./add-later";

@@ -6,6 +6,26 @@ import type { TodayDataSource } from "./today-data-source";
 const date = "2026-09-29";
 
 describe("getToday", () => {
+  it.each(["must_do", "plan"] as const)("keeps committed Added Later %s separate and frozen", async (priority) => {
+    const result = await getToday(date, createDataSource({
+      getDailyPlan: async () => ({ id: "committed", status: "committed", snapshotCreatedAt: "2026-09-29T01:00:00Z" }),
+      getDailyPlanItems: async () => [
+        dailyItem({ id: "initial-must", taskId: "must", priority: "must_do", titleSnapshot: "Initial Must-do" }),
+        dailyItem({ id: "initial-plan", taskId: "plan", titleSnapshot: "Initial Plan" }),
+        dailyItem({ id: "later-item", taskId: "later", origin: "added_later", priority,
+          titleSnapshot: "Added Later frozen title", plannedStartTimeSnapshot: "11:00:00", plannedEndTimeSnapshot: "12:00:00" }),
+      ],
+      getTasks: async () => [{ id: "must", title: "Changed Must-do" }, { id: "plan", title: "Changed Plan" }, { id: "later", title: "Changed Later" }],
+    }));
+    expect(result.items.mustDo.map((item) => item.id)).toEqual(["initial-must"]);
+    expect(result.items.plan.map((item) => item.id)).toEqual(["initial-plan"]);
+    expect(result.items.addedLater).toEqual([expect.objectContaining({
+      id: "later-item", taskId: "later", origin: "added_later", priority, resultStatus: "pending",
+      title: "Added Later frozen title", plannedStartTime: "11:00:00", plannedEndTime: "12:00:00",
+    })]);
+    expect(result.dailyStatus).toEqual({ available: false });
+  });
+
   it("uses the current title and only times scheduled for the Draft date", async () => {
     const getPlanningItemsForTasks = vi.fn(async (_taskIds: string[], requestedDate: string) => {
       expect(requestedDate).toBe(date);
