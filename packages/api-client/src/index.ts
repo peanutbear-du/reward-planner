@@ -13,3 +13,9 @@ export type {
   DeleteTaskOptions,
   EditTaskTitleOptions,
 } from "./task";
+export {
+  DraftTodayApiClientError,
+  upsertDraftTodayItem,
+  removeDraftTodayItem,
+} from "./draft-today";
+export type { DraftTodayCommandOptions } from "./draft-today";

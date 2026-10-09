@@ -281,6 +281,24 @@ Rules:
 
 ---
 
+## RP-M1-06A — Draft Today
+
+Status: DONE
+
+Acceptance Criteria:
+
+- add an existing ordinary Task to a date's Draft Today
+- first item creates `daily_plan(status=draft)` when needed
+- Draft item uses `origin=initial`
+- priority is `must_do | plan`
+- priority may be changed before commit without duplicating Task
+- Draft item may be removed before commit
+- committed Daily Plan must not be modified by this ticket
+- adding to Draft Today does not implicitly reschedule the Task
+- no qualification / reward logic
+
+---
+
 ## RP-M1-07 — Commit Daily Plan
 
 Status: TODO

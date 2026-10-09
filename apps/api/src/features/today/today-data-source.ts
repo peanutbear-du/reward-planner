@@ -44,7 +44,7 @@ export interface TodayDataSource {
   getTimezone(): Promise<string | null>;
   getDailyPlan(date: string): Promise<DailyPlanRecord | null>;
   getDailyPlanItems(dailyPlanId: string): Promise<DailyPlanItemRecord[]>;
-  getPlanningItemsForTasks(taskIds: string[]): Promise<PlanningItemRecord[]>;
+  getPlanningItemsForTasks(taskIds: string[], date: string): Promise<PlanningItemRecord[]>;
   getTimedPlanningItemsForDate(date: string): Promise<TimedPlanningItemRecord[]>;
   getTasks(taskIds: string[]): Promise<TaskRecord[]>;
 }

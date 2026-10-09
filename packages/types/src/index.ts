@@ -18,3 +18,9 @@ export type {
   TaskDto,
   TaskPlanningItemDto,
 } from "./task";
+export type {
+  UpsertDraftTodayItemRequest,
+  UpsertDraftTodayItemResponse,
+  RemoveDraftTodayItemRequest,
+  RemoveDraftTodayItemResponse,
+} from "./draft-today";

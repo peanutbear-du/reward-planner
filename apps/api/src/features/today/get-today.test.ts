@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { getToday } from "./get-today";
 import type { TodayDataSource } from "./today-data-source";
@@ -6,6 +6,29 @@ import type { TodayDataSource } from "./today-data-source";
 const date = "2026-09-29";
 
 describe("getToday", () => {
+  it("uses the current title and only times scheduled for the Draft date", async () => {
+    const getPlanningItemsForTasks = vi.fn(async (_taskIds: string[], requestedDate: string) => {
+      expect(requestedDate).toBe(date);
+      return [{ id: "planning-same-date", taskId: "same-date", startTime: "09:00:00", endTime: "10:00:00" }];
+    });
+    const result = await getToday(date, createDataSource({
+      getDailyPlan: async () => ({ id: "draft", status: "draft", snapshotCreatedAt: null }),
+      getDailyPlanItems: async () => [
+        dailyItem({ id: "same", taskId: "same-date", titleSnapshot: "Provisional title" }),
+        dailyItem({ id: "other", taskId: "other-date", plannedStartTimeSnapshot: "14:00:00", plannedEndTimeSnapshot: "15:00:00" }),
+      ],
+      getTasks: async () => [
+        { id: "same-date", title: "Current Task title" }, { id: "other-date", title: "Other date Task" },
+      ],
+      getPlanningItemsForTasks,
+    }));
+    expect(getPlanningItemsForTasks).toHaveBeenCalledWith(["same-date", "other-date"], date);
+    expect(result.items.plan[0]).toMatchObject({ title: "Current Task title", plannedStartTime: "09:00:00", plannedEndTime: "10:00:00" });
+    expect(result.items.plan[1]).toMatchObject({ plannedStartTime: null, plannedEndTime: null });
+    expect(result.items.addedLater).toEqual([]);
+    expect(result.dailyStatus).toEqual({ available: false });
+  });
+
   it("returns an empty Daily Plan while preserving independent timed Tasks", async () => {
     const result = await getToday(
       date,

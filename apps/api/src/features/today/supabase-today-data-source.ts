@@ -98,7 +98,7 @@ export function createSupabaseTodayDataSource(
       }));
     },
 
-    async getPlanningItemsForTasks(taskIds) {
+    async getPlanningItemsForTasks(taskIds, date) {
       if (taskIds.length === 0) {
         return [];
       }
@@ -106,7 +106,8 @@ export function createSupabaseTodayDataSource(
       const { data, error } = await supabase
         .from("planning_items")
         .select("id,task_id,start_time,end_time")
-        .in("task_id", taskIds);
+        .in("task_id", taskIds)
+        .eq("planned_date", date);
 
       assertQuerySucceeded(error, "Task Planning Items");
       return mapPlanningItems((data ?? []) as PlanningItemDatabaseRow[]);

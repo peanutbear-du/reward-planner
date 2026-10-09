@@ -23,6 +23,7 @@ export async function getToday(
     dailyPlan?.status === "draft"
       ? await dataSource.getPlanningItemsForTasks(
           dailyPlanItems.map((item) => item.taskId),
+          date,
         )
       : [];
   const taskIds = unique([

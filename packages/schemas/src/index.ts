@@ -12,3 +12,7 @@ export type {
   DeleteTaskInput,
   EditTaskTitleInput,
 } from "./task";
+export {
+  upsertDraftTodayItemRequestSchema,
+  removeDraftTodayItemRequestSchema,
+} from "./draft-today";
