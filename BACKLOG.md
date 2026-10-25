@@ -329,6 +329,32 @@ Acceptance Criteria:
 
 ---
 
+# Desktop UI — Today Foundation
+
+## RP-UI-01 — Today Desktop Foundation
+
+Status: DONE
+
+Scope:
+
+- Implement the Figma Today desktop layout in the existing React + Vite app.
+- Preserve Supabase Auth, session restore, and sign out.
+- Use the shared API client and Bearer Token for all Business API access.
+- Render date navigation, Must-do, Plan, Added Later, Schedule, and Draft/Committed state.
+- Create ordinary Tasks, add to Draft, adjust priority, remove Draft items, commit, and add later.
+- Provide loading, empty, error, and pending feedback; refresh Today after commands.
+- Keep Daily Status and Active Projects as explicit unavailable placeholders.
+- Use a Vite development proxy and browser-local calendar dates.
+
+Acceptance Criteria:
+
+- Verify login → create Task → Draft → Must-do/Plan → Commit → Added Later → reload persistence.
+- Run frontend tests, typecheck, lint, build, and one local interaction smoke.
+- No task completion, qualification, reward, Wish, Week, or Review implementation.
+- Await review; do not commit/push or update other ticket statuses.
+
+---
+
 # M2 — Daily Qualification + History
 
 ## RP-M2-01 — Complete / uncomplete Task

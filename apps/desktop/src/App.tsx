@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 
 import { AuthView } from "./auth/AuthView";
 import { signOut } from "./auth/auth-service";
 import { useAuthSession } from "./auth/use-auth-session";
+
+const TodayPage = lazy(() =>
+  import("./today/TodayPage").then((module) => ({ default: module.TodayPage })),
+);
 
 export function App() {
   const { error: sessionError, isLoading, session } = useAuthSession();
@@ -14,8 +18,8 @@ export function App() {
       <main className="auth-page" aria-busy="true">
         <section className="auth-panel">
           <p className="eyebrow">Reward Planner</p>
-          <h1>Restoring your session</h1>
-          <p className="supporting-copy">Please wait a moment.</p>
+          <h1>正在恢复登录状态</h1>
+          <p className="supporting-copy">请稍候。</p>
         </section>
       </main>
     );
@@ -33,10 +37,10 @@ export function App() {
       const { error } = await signOut();
 
       if (error) {
-        setSignOutError(error.message);
+        setSignOutError("退出登录失败，请重试。");
       }
-    } catch (error) {
-      setSignOutError(getErrorMessage(error));
+    } catch {
+      setSignOutError("退出登录失败，请重试。");
     } finally {
       setIsSigningOut(false);
     }
@@ -46,11 +50,19 @@ export function App() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">Reward Planner</div>
-        <nav aria-label="Primary navigation">
-          <span className="placeholder-label">Navigation</span>
+        <p className="brand-caption">把长期目标落到今天</p>
+        <nav className="primary-nav" aria-label="主导航">
+          <span className="nav-item nav-selected" aria-current="page">计划</span>
+          <span className="nav-item" aria-disabled="true">项目<small>待开放</small></span>
+          <span className="nav-item" aria-disabled="true">愿望板<small>待开放</small></span>
+          <span className="nav-item" aria-disabled="true">回顾<small>待开放</small></span>
         </nav>
 
         <div className="account-panel">
+          <div className="theme-indicator" aria-label="当前主题：蓝色">
+            <span className="theme-swatch" aria-hidden="true" />
+            <span>主题 · 蓝色</span>
+          </div>
           <span className="account-email">{session.user.email}</span>
           <button
             className="secondary-button"
@@ -58,7 +70,7 @@ export function App() {
             onClick={handleSignOut}
             disabled={isSigningOut}
           >
-            {isSigningOut ? "Signing out…" : "Sign out"}
+            {isSigningOut ? "正在退出…" : "退出登录"}
           </button>
           {signOutError ? (
             <p className="form-message form-message-error" role="alert">
@@ -68,14 +80,9 @@ export function App() {
         </div>
       </aside>
 
-      <main className="main-content">
-        <p className="placeholder-label">Main content</p>
-        <h1>Reward Planner</h1>
-      </main>
+      <Suspense fallback={<main className="main-content" role="status">正在加载每日计划…</main>}>
+        <TodayPage key={session.user.id} accessToken={session.access_token} />
+      </Suspense>
     </div>
   );
-}
-
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Authentication failed.";
 }
