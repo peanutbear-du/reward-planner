@@ -516,6 +516,14 @@ If Today is committed:
 
 ### 8.3 completeTask
 
+RP-M2-01 scope (confirmed): implement steps 1–2 only for an existing Item in a
+Committed plan on the current date in the user's configured timezone. Uncomplete
+uses the same boundary. Draft, past/future dates, and rescheduled/cancelled results
+are not executable. Missing settings use the existing UTC default; invalid timezone
+values fail closed. Other dates and Initial / Added Later title/time snapshots stay
+unchanged. Step 3 awaits Projects; steps 4–5 belong to RP-M2-02 / RP-M2-03. The
+server continues to report Daily Status unavailable until qualification exists.
+
 Transaction:
 
 1. update global Task status

@@ -6,6 +6,30 @@ import type { TodayDataSource } from "./today-data-source";
 const date = "2026-09-29";
 
 describe("getToday", () => {
+  it.each([
+    ["2026-10-25T16:30:00Z", "Asia/Shanghai", "2026-10-26", "committed", true],
+    ["2026-10-25T16:30:00Z", "Asia/Shanghai", "2026-10-25", "committed", false],
+    ["2026-10-25T16:30:00Z", "UTC", "2026-10-25", "draft", false],
+    ["2026-10-25T16:30:00Z", null, "2026-10-25", "committed", true],
+  ] as const)("returns execution eligibility from server date/timezone: %s %s %s %s", async (now, timezone, requested, status, available) => {
+    const result = await getToday(requested, createDataSource({
+      getTimezone: async () => timezone,
+      getDailyPlan: async () => ({ id: "plan", status, snapshotCreatedAt: status === "committed" ? now : null }),
+    }), new Date(now));
+    expect(result.execution).toEqual({ currentDate: timezone === "Asia/Shanghai" ? "2026-10-26" : "2026-10-25", available });
+    expect(result.dailyStatus).toEqual({ available: false });
+  });
+
+  it("returns the per-day result instead of deriving completion from global Task state", async () => {
+    const result = await getToday(date, createDataSource({
+      getDailyPlan: async () => ({ id: "plan", status: "committed", snapshotCreatedAt: "2026-09-29T00:00:00Z" }),
+      getDailyPlanItems: async () => [dailyItem({ titleSnapshot: "Frozen title", plannedStartTimeSnapshot: "09:00:00",
+        resultStatus: "completed", completedAtOnDay: "2026-09-29T01:00:00Z" })],
+      getTasks: async () => [{ id: "task", title: "Changed current title" }],
+    }));
+    expect(result.items.plan[0]).toMatchObject({ title: "Frozen title", plannedStartTime: "09:00:00",
+      resultStatus: "completed", completedAtOnDay: "2026-09-29T01:00:00Z" });
+  });
   it.each(["must_do", "plan"] as const)("keeps committed Added Later %s separate and frozen", async (priority) => {
     const result = await getToday(date, createDataSource({
       getDailyPlan: async () => ({ id: "committed", status: "committed", snapshotCreatedAt: "2026-09-29T01:00:00Z" }),

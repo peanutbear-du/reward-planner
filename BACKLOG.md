@@ -359,13 +359,18 @@ Acceptance Criteria:
 
 ## RP-M2-01 — Complete / uncomplete Task
 
-Status: TODO
+Status: DONE
 
 Acceptance Criteria:
 
 - Task global status updates
 - Daily Plan Item updates
-- Daily status recalculates server-side
+- Execution state is persisted server-side; qualification recalculation belongs to RP-M2-02 and reward transitions to RP-M2-03.
+- Only the current date in the user's configured timezone and a Committed plan may execute.
+- Complete / uncomplete is atomic and idempotent; other dates and title/time snapshots remain unchanged.
+- Desktop displays persisted execution after command success and refetch.
+
+Scope clarification (confirmed for RP-M2-01): TECH_SPEC §8.3 describes the final cross-ticket transaction. This ticket implements its Task / Daily Item execution portion only. No qualification, reward, or Project activity is calculated here.
 
 ---
 

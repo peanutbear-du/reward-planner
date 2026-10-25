@@ -67,6 +67,11 @@ function TodayContent({ accessToken, date, onDate }: {
       <h2>{title}<span className="count">{items.length}</span></h2>
       {items.length ? <ul className="task-list">{items.map((item) => <TaskItem
         key={item.id} item={item} editable={!committed} disabled={locked || !!createdTaskId}
+        executionAvailable={query.data?.execution.available === true}
+        onCompletion={(completed) => run(async () => {
+          await api.execute(date, item.taskId, completed);
+          setNotice(completed ? "任务已完成。" : "已取消任务完成状态。");
+        })}
         onPriority={(priority) => run(() => api.put(date, item.taskId, priority, false))}
         onRemove={() => run(() => api.remove(date, item.taskId))}
       />)}</ul> : <p className="empty-copy">{empty}</p>}
@@ -143,7 +148,7 @@ function TodayContent({ accessToken, date, onDate }: {
         </> : null}
       </div>
       <aside className="context-rail" aria-label="每日概览">
-        <section className="context-section"><h2>今日状态</h2><p className="empty-copy">尚未实现</p><p className="section-caption">任务勾选与每日达标状态将在后续阶段提供。</p></section>
+        <section className="context-section"><h2>今日状态</h2><p className="empty-copy">尚未实现</p><p className="section-caption">每日达标状态将在后续阶段提供。</p></section>
         <section className="context-section"><h2>当前项目</h2><p className="empty-copy">尚未实现</p><p className="section-caption">项目接入后，将在这里显示相关项目。</p></section>
       </aside>
     </div>

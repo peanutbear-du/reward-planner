@@ -6,6 +6,7 @@ import { ApiClientError, getToday } from "./today";
 const responseBody: TodayResponse = {
   date: "2026-09-29",
   timezone: null,
+  execution: { currentDate: "2026-09-29", available: false },
   dailyPlan: null,
   items: { mustDo: [], plan: [], addedLater: [] },
   schedule: { timedTasks: [], calendarEvents: [] },

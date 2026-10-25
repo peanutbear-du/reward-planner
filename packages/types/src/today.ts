@@ -37,6 +37,10 @@ export interface ScheduleTask {
 export interface TodayResponse {
   date: string;
   timezone: string | null;
+  execution: {
+    currentDate: string;
+    available: boolean;
+  };
   dailyPlan: {
     id: string;
     status: DailyPlanStatus;

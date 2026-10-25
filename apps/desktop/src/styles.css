@@ -281,7 +281,8 @@ h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 28px; }
 .task-section { margin-top: var(--space-4); }
 .task-list, .schedule-list { list-style: none; margin: var(--space-2) 0 0; padding: 0; }
 .task-item { display: flex; align-items: center; gap: var(--space-3); min-height: 52px; padding: 10px 2px; font-size: 14px; line-height: 24px; }
-.task-marker { width: 18px; height: 18px; flex-shrink: 0; background: var(--color-bg-surface); border: 1px solid var(--color-border-default); border-radius: 4px; }
+.task-marker { width: 18px; height: 18px; margin: 0; flex-shrink: 0; accent-color: var(--color-accent-strong); cursor: pointer; }
+.task-marker:disabled { cursor: not-allowed; }
 .task-item-must .task-marker { border-color: var(--color-accent-70); }
 .task-copy { min-width: 0; flex: 1; overflow-wrap: anywhere; }
 .task-copy small, .schedule-task small { display: block; font-size: 11px; line-height: 18px; color: var(--color-text-secondary); }

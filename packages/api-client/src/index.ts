@@ -23,3 +23,5 @@ export { commitDailyPlan, CommitDailyPlanApiClientError } from "./commit-daily-p
 export type { CommitDailyPlanOptions } from "./commit-daily-plan";
 export { addLater, AddLaterApiClientError } from "./add-later";
 export type { AddLaterOptions } from "./add-later";
+export { completeTask, uncompleteTask, TaskExecutionApiClientError } from "./task-execution";
+export type { TaskExecutionOptions } from "./task-execution";

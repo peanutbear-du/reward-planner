@@ -8,6 +8,7 @@ import { localDate, shiftDate } from "./date";
 
 function empty(date: string): TodayResponse {
   return { date, timezone: null, dailyPlan: null,
+    execution: { currentDate: localDate(), available: false },
     items: { mustDo: [], plan: [], addedLater: [] },
     schedule: { timedTasks: [], calendarEvents: [] },
     dailyStatus: { available: false }, activeProjects: { available: false, items: [] } };
@@ -19,17 +20,22 @@ let fetchMock: Mock<(url: URL, options: RequestInit) => Promise<Response>>;
 let failNextPut: boolean;
 let failReads: boolean;
 let created: number;
+let failExecution: boolean;
+let executionDate: string;
 const day = () => days.get(localDate())!;
 
 beforeEach(() => {
   days = new Map([[localDate(), empty(localDate())]]);
   titles = new Map(); created = 0; failNextPut = false; failReads = false;
+  failExecution = false; executionDate = localDate();
   fetchMock = vi.fn(async (url: URL, options: RequestInit) => {
     expect((options.headers as Record<string, string>).Authorization).toBe("Bearer browser-session");
     if (url.pathname === "/api/today") {
       if (failReads) return new Response(null, { status: 503 });
       const date = url.searchParams.get("date")!;
-      return Response.json(days.get(date) ?? empty(date));
+      const data = days.get(date) ?? empty(date);
+      data.execution = { currentDate: executionDate, available: date === executionDate && data.dailyPlan?.status === "committed" };
+      return Response.json(data);
     }
     const input = JSON.parse(options.body as string);
     if (url.pathname === "/api/commands/task/create") {
@@ -39,7 +45,13 @@ beforeEach(() => {
     }
     const current = days.get(input.date) ?? empty(input.date);
     days.set(input.date, current);
-    if (url.pathname.endsWith("/commit")) {
+    if (url.pathname.endsWith("/complete") || url.pathname.endsWith("/uncomplete")) {
+      if (failExecution) return Response.json({ error: "TASK_DATE_NOT_CURRENT" }, { status: 409 });
+      const item = [...current.items.mustDo, ...current.items.plan, ...current.items.addedLater].find((entry) => entry.taskId === input.taskId)!;
+      const completed = url.pathname.endsWith("/complete");
+      item.resultStatus = completed ? "completed" : "pending";
+      item.completedAtOnDay = completed ? "2026-10-25T01:00:00Z" : null;
+    } else if (url.pathname.endsWith("/commit")) {
       current.dailyPlan = { id: "daily", status: "committed", snapshotCreatedAt: "2026-10-22T03:00:00Z" };
     } else if (url.pathname.endsWith("/remove-item")) {
       current.items.mustDo = current.items.mustDo.filter((item) => item.taskId !== input.taskId);
@@ -139,7 +151,7 @@ describe("Today Desktop", () => {
     view.unmount(); render(<TodayPage accessToken="browser-session" />);
     await screen.findByText("计划已确认"); await screen.findByText("Read later");
     expect(screen.getAllByText("尚未实现")).toHaveLength(2);
-    expect(screen.queryByRole("checkbox")).toBeNull();
+    expect(screen.getAllByRole("checkbox")).toHaveLength(2);
   });
 
   it("retries a failed join using the existing Task", async () => {
@@ -182,18 +194,81 @@ describe("Today Desktop", () => {
     expect((screen.getByRole("button", { name: "创建并加入草稿" }) as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it("keeps task markers inert instead of simulating completion", async () => {
-    const view = render(<TodayPage accessToken="browser-session" />); await ready();
-    await add("Read-only completion marker");
-    const marker = view.container.querySelector(".task-marker")!;
+  it("disables completion in Draft", async () => {
+    render(<TodayPage accessToken="browser-session" />); await ready();
+    await add("Draft item");
+    const checkbox = screen.getByRole("checkbox") as HTMLInputElement;
     const callsBefore = fetchMock.mock.calls.length;
-    fireEvent.click(marker);
-    fireEvent.keyDown(marker, { key: " " });
-    expect(marker.getAttribute("aria-hidden")).toBe("true");
-    expect(marker.hasAttribute("tabindex")).toBe(false);
-    expect(screen.queryByRole("checkbox")).toBeNull();
+    expect(checkbox.disabled).toBe(true);
+    checkbox.click();
     expect(fetchMock.mock.calls).toHaveLength(callsBefore);
     expect(day().items.plan[0].resultStatus).toBe("pending");
-    expect(screen.getByText("待完成")).toBeTruthy();
+  });
+
+  it("waits for backend success to show completion, can uncomplete and reloads persisted execution", async () => {
+    const view = render(<TodayPage accessToken="browser-session" />); await ready();
+    await add("Persisted task");
+    fireEvent.click(screen.getByRole("button", { name: "完成今日计划" }));
+    await screen.findByText("计划已确认");
+    const server = fetchMock.getMockImplementation()!;
+    let release!: () => void;
+    const pending = new Promise<void>((resolve) => { release = resolve; });
+    fetchMock.mockImplementation(async (url: URL, options: RequestInit) => {
+      if (url.pathname.endsWith("/complete")) await pending;
+      return server(url, options);
+    });
+    const checkbox = screen.getByRole("checkbox") as HTMLInputElement;
+    fireEvent.click(checkbox);
+    await screen.findByText("正在保存…");
+    expect(checkbox.checked).toBe(false);
+    expect(checkbox.disabled).toBe(true);
+    release();
+    await waitFor(() => expect(checkbox.checked).toBe(true));
+    expect(day().items.plan[0].completedAtOnDay).not.toBeNull();
+    view.unmount(); render(<TodayPage accessToken="browser-session" />);
+    await screen.findByText("Persisted task");
+    expect((screen.getByRole("checkbox") as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(screen.getByRole("checkbox"));
+    await waitFor(() => expect((screen.getByRole("checkbox") as HTMLInputElement).checked).toBe(false));
+    expect(day().items.plan[0].completedAtOnDay).toBeNull();
+  });
+
+  it("keeps a failed completion unchecked and displays the server conflict", async () => {
+    render(<TodayPage accessToken="browser-session" />); await ready();
+    await add("Keep pending");
+    fireEvent.click(screen.getByRole("button", { name: "完成今日计划" }));
+    await screen.findByText("计划已确认"); failExecution = true;
+    fireEvent.click(screen.getByRole("checkbox"));
+    await screen.findByText("只能更新用户时区当天的执行状态，请刷新日期。");
+    expect((screen.getByRole("checkbox") as HTMLInputElement).checked).toBe(false);
+    expect(day().items.plan[0].resultStatus).toBe("pending");
+  });
+
+  it("uses server eligibility instead of the browser date and disables other dates", async () => {
+    render(<TodayPage accessToken="browser-session" />); await ready();
+    await add("Other date");
+    fireEvent.click(screen.getByRole("button", { name: "完成今日计划" }));
+    await screen.findByText("计划已确认");
+    executionDate = shiftDate(localDate(), -1);
+    fireEvent.click(screen.getByRole("button", { name: "刷新" }));
+    await waitFor(() => expect((screen.getByRole("checkbox") as HTMLInputElement).disabled).toBe(true));
+    expect((screen.getByRole("checkbox") as HTMLInputElement).checked).toBe(false);
+  });
+
+  it("persists Added Later completion and keeps a failed uncomplete checked", async () => {
+    render(<TodayPage accessToken="browser-session" />); await ready();
+    await add("Initial task");
+    fireEvent.click(screen.getByRole("button", { name: "完成今日计划" }));
+    await screen.findByText("计划已确认");
+    await add("Added Later execution", true);
+    const checkbox = screen.getByRole("checkbox", { name: "完成任务：Added Later execution" }) as HTMLInputElement;
+    fireEvent.click(checkbox);
+    await waitFor(() => expect(checkbox.checked).toBe(true));
+    failExecution = true;
+    fireEvent.click(checkbox);
+    await screen.findByText("只能更新用户时区当天的执行状态，请刷新日期。");
+    expect(checkbox.checked).toBe(true);
+    expect(day().items.addedLater[0].resultStatus).toBe("completed");
+    expect(day().items.plan[0].resultStatus).toBe("pending");
   });
 });

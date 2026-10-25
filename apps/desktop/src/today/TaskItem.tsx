@@ -4,6 +4,8 @@ interface TaskItemProps {
   item: TodayItem;
   editable: boolean;
   disabled: boolean;
+  executionAvailable: boolean;
+  onCompletion: (completed: boolean) => void;
   onPriority: (priority: DailyPlanItemPriority) => void;
   onRemove: () => void;
 }
@@ -13,10 +15,13 @@ const results = {
   cancelled: "已取消", incomplete: "未完成",
 };
 
-export function TaskItem({ item, editable, disabled, onPriority, onRemove }: TaskItemProps) {
+export function TaskItem({ item, editable, disabled, executionAvailable, onCompletion, onPriority, onRemove }: TaskItemProps) {
   return (
     <li className={`task-item ${item.priority === "must_do" ? "task-item-must" : ""}`}>
-      <span className="task-marker" aria-hidden="true" />
+      <input className="task-marker" type="checkbox" aria-label={`完成任务：${item.title}`}
+        checked={item.resultStatus === "completed"}
+        disabled={disabled || !executionAvailable || !["pending", "completed"].includes(item.resultStatus)}
+        onChange={(event) => onCompletion(event.target.checked)} />
       <div className="task-copy">
         <span>{item.title}</span>
         <small>

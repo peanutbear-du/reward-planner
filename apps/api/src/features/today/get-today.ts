@@ -10,6 +10,7 @@ import type {
 export async function getToday(
   date: string,
   dataSource: TodayDataSource,
+  now = new Date(),
 ): Promise<TodayResponse> {
   const [timezone, dailyPlan, timedPlanningItems] = await Promise.all([
     dataSource.getTimezone(),
@@ -61,9 +62,11 @@ export async function getToday(
     }
   }
 
+  const currentDate = serverCalendarDate(now, timezone ?? "UTC");
   return {
     date,
     timezone,
+    execution: { currentDate, available: date === currentDate && dailyPlan?.status === "committed" },
     dailyPlan: dailyPlan
       ? {
           id: dailyPlan.id,
@@ -138,4 +141,11 @@ function getTaskTitle(taskId: string, tasksById: Map<string, TaskRecord>) {
 
 function unique(values: string[]) {
   return [...new Set(values)];
+}
+
+function serverCalendarDate(now: Date, timezone: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(now);
+  return ["year", "month", "day"].map((name) => parts.find((part) => part.type === name)!.value).join("-");
 }
