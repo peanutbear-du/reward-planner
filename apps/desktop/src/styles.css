@@ -306,6 +306,18 @@ h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 28px; }
 .schedule-accent { position: absolute; left: 0; top: 0; }
 .context-rail { display: grid; gap: var(--space-4); }
 .context-section { padding: 18px; background: var(--color-bg-subtle); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-panel); }
+.daily-status { display: grid; gap: 14px; }
+.daily-status-numbers { display: flex; align-items: end; justify-content: space-between; gap: 14px; }
+.daily-status-numbers > div { display: grid; gap: 2px; }
+.daily-status-numbers > div:last-child { text-align: right; }
+.daily-status-numbers strong { font-family: Inter, sans-serif; font-size: 32px; font-weight: 600; line-height: 38px; letter-spacing: -0.48px; }
+.daily-status-numbers > div:last-child strong { font-size: 24px; line-height: 30px; color: var(--color-accent-strong); }
+.daily-status-numbers span, .daily-qualification span { font-size: 11px; line-height: 18px; color: var(--color-text-secondary); }
+.daily-completion-blocks { display: flex; gap: 5px; }
+.daily-completion-blocks > span { flex: 1; height: 10px; overflow: hidden; background: var(--color-border-subtle); border-radius: 3px; }
+.daily-completion-blocks i { display: block; height: 100%; background: var(--color-accent-strong); }
+.daily-qualification { padding: 10px 12px; border-radius: 8px; background: var(--color-accent-10); }
+.daily-qualification p { margin: 0 0 3px; color: var(--color-accent-strong); font-size: 12px; line-height: 20px; }
 button:hover:not(:disabled) { filter: brightness(0.96); }
 button:active:not(:disabled) { filter: brightness(0.9); }
 :is(button, input, select):focus-visible { outline: 2px solid var(--color-accent-70); outline-offset: 2px; }

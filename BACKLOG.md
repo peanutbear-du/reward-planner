@@ -376,7 +376,7 @@ Scope clarification (confirmed for RP-M2-01): TECH_SPEC §8.3 describes the fina
 
 ## RP-M2-02 — Daily qualification engine
 
-Status: TODO
+Status: DONE
 
 Rules:
 

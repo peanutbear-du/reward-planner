@@ -10,7 +10,7 @@ const responseBody: TodayResponse = {
   dailyPlan: null,
   items: { mustDo: [], plan: [], addedLater: [] },
   schedule: { timedTasks: [], calendarEvents: [] },
-  dailyStatus: { available: false },
+  dailyStatus: { available: false, reason: "no_plan" },
   activeProjects: { available: false, items: [] },
 };
 

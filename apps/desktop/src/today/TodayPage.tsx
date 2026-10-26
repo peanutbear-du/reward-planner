@@ -9,6 +9,7 @@ import taskAccent from "../assets/task-accent.svg";
 import { todayApi, requestError } from "./api";
 import { formatDate, localDate, shiftDate } from "./date";
 import { TaskItem } from "./TaskItem";
+import { DailyStatus } from "./DailyStatus";
 
 export function TodayPage({ accessToken }: { accessToken: string }) {
   // This cache is discarded on sign out / user change with the page instance.
@@ -148,7 +149,7 @@ function TodayContent({ accessToken, date, onDate }: {
         </> : null}
       </div>
       <aside className="context-rail" aria-label="每日概览">
-        <section className="context-section"><h2>今日状态</h2><p className="empty-copy">尚未实现</p><p className="section-caption">每日达标状态将在后续阶段提供。</p></section>
+        <DailyStatus status={query.data?.dailyStatus} failed={query.isError} />
         <section className="context-section"><h2>当前项目</h2><p className="empty-copy">尚未实现</p><p className="section-caption">项目接入后，将在这里显示相关项目。</p></section>
       </aside>
     </div>

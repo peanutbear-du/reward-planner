@@ -175,8 +175,12 @@ select is(
   'open', 'uncomplete never rewrites the other date that remains completed'
 );
 select ok(
-  not exists (select 1 from public.daily_plans p join original_plans o using (id) where to_jsonb(p) <> o.body),
-  'plan status, initial snapshot metadata and qualification are untouched'
+  not exists (select 1 from public.daily_plans p join original_plans o using (id)
+    where (to_jsonb(p) - array['total_item_count','completed_item_count','must_do_item_count',
+      'completed_must_do_item_count','completion_rate','is_qualified','qualified_at','qualification_calculated_at','updated_at'])
+    <> (o.body - array['total_item_count','completed_item_count','must_do_item_count',
+      'completed_must_do_item_count','completion_rate','is_qualified','qualified_at','qualification_calculated_at','updated_at'])),
+  'plan status and initial snapshot metadata are untouched; M2-02 maintains qualification separately'
 );
 select ok(
   not exists (

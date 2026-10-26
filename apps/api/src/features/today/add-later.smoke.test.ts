@@ -74,7 +74,7 @@ describe.skipIf(!process.env.ADDED_LATER_SMOKE_API_BASE_URL)("Added Later live s
       const item = newItems.addedLater[0];
       expect(item.taskId === laterId && item.origin === "added_later" && item.priority === "must_do" && item.resultStatus === "pending", "Added Later identity and state").toBe(true);
       expect(item.title === "M1-08 current title at addition" && item.plannedStartTime === "11:00:00" && item.plannedEndTime === "12:00:00", "current title and same-day time frozen").toBe(true);
-      expect(JSON.stringify(today.dailyStatus) === JSON.stringify({ available: false }), "no invented Daily status").toBe(true);
+      expect(today.dailyStatus).toMatchObject({ available: true, totalItems: 2, completedItems: 0, isQualified: false });
 
       await requestJson(apiBase, "/api/commands/task/edit", {
         method: "POST", headers, body: JSON.stringify({ taskId: laterId, title: "M1-08 changed after snapshot" }),

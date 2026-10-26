@@ -3,9 +3,10 @@ import type {
   DailyPlanItemPriority,
   DailyPlanItemResultStatus,
   DailyPlanStatus,
+  DailyQualification,
 } from "@reward-planner/types";
 
-export interface DailyPlanRecord {
+export interface DailyPlanRecord extends DailyQualification {
   id: string;
   status: DailyPlanStatus;
   snapshotCreatedAt: string | null;

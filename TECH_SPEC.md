@@ -347,6 +347,10 @@ Fields:
 - snapshot_created_at
 - is_qualified
 - qualified_at nullable
+- total_item_count / completed_item_count
+- must_do_item_count / completed_must_do_item_count
+- completion_rate (database-generated percentage, truncated to two decimal places)
+- qualification_calculated_at nullable
 - created_at
 - updated_at
 
@@ -521,8 +525,8 @@ Committed plan on the current date in the user's configured timezone. Uncomplete
 uses the same boundary. Draft, past/future dates, and rescheduled/cancelled results
 are not executable. Missing settings use the existing UTC default; invalid timezone
 values fail closed. Other dates and Initial / Added Later title/time snapshots stay
-unchanged. Step 3 awaits Projects; steps 4–5 belong to RP-M2-02 / RP-M2-03. The
-server continues to report Daily Status unavailable until qualification exists.
+unchanged. Step 3 awaits Projects; steps 4–5 belong to RP-M2-02 / RP-M2-03.
+RP-M2-02 adds persisted qualification and exposes it through Daily Status.
 
 Transaction:
 
@@ -534,6 +538,31 @@ Transaction:
 5. process reward transition if needed
 
 ### 8.4 Daily qualification transition
+
+RP-M2-02 implements qualification only; the reward effects below remain RP-M2-03.
+Committed plans count all Initial and Added Later Daily Items (Task / Milestone
+targets); Calendar Events and standalone Planning Items are excluded. Pending,
+incomplete, rescheduled and cancelled Daily Items remain in the denominator and
+are not completed. No cancellation/reschedule command is introduced here.
+
+Qualification requires N > 0, all current Must-do completed, and the exact ratio
+completed / N >= 80%. A rounded display percentage never decides qualification.
+Draft and missing plans have no official Daily Status; empty Committed plans
+report 0 / 0, 0%, unqualified. Historical Committed plans read their own persisted
+Daily Item results, never current global Task state. M2-01 date rules stay intact.
+
+Internal database triggers recalculate on Item membership/result/priority changes
+and plan Commit, in the existing Command transaction and under its plan-first row
+lock. Recalculation is not a client-callable RPC; clients retain read-only domain
+table access. No reward/wish/project effect is emitted in this ticket.
+
+`qualified_at` records the current false-to-true transition, stays stable during
+true-to-true changes, and clears on reversal. Aggregate timestamps change only
+when counters/qualification change (or on first Committed initialization), not on
+idempotent retries. Migration backfill derives counts from each day's stored Items;
+newly observed qualified history uses calculation time, not a guessed original
+qualification time, while preserving existing valid qualified timestamps. It does
+not update any Task, Daily Item or snapshot.
 
 Only transitions matter:
 

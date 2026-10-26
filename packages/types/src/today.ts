@@ -34,6 +34,22 @@ export interface ScheduleTask {
   countsTowardDaily: boolean;
 }
 
+/** Persisted by the database from per-day Items; never derived by a client. */
+export interface DailyQualification {
+  totalItems: number;
+  completedItems: number;
+  mustDoItems: number;
+  completedMustDoItems: number;
+  completionRate: number;
+  isQualified: boolean;
+  qualifiedAt: string | null;
+  calculatedAt: string | null;
+}
+
+export type DailyStatus =
+  | { available: false; reason: "no_plan" | "draft" }
+  | ({ available: true } & DailyQualification);
+
 export interface TodayResponse {
   date: string;
   timezone: string | null;
@@ -55,9 +71,7 @@ export interface TodayResponse {
     timedTasks: ScheduleTask[];
     calendarEvents: [];
   };
-  dailyStatus: {
-    available: false;
-  };
+  dailyStatus: DailyStatus;
   activeProjects: {
     available: false;
     items: [];

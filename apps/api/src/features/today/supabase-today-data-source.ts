@@ -12,6 +12,14 @@ interface DailyPlanDatabaseRow {
   id: string;
   status: DailyPlanRecord["status"];
   snapshot_created_at: string | null;
+  total_item_count: number;
+  completed_item_count: number;
+  must_do_item_count: number;
+  completed_must_do_item_count: number;
+  completion_rate: number;
+  is_qualified: boolean;
+  qualified_at: string | null;
+  qualification_calculated_at: string | null;
 }
 
 interface DailyPlanItemDatabaseRow {
@@ -56,7 +64,7 @@ export function createSupabaseTodayDataSource(
     async getDailyPlan(date) {
       const { data, error } = await supabase
         .from("daily_plans")
-        .select("id,status,snapshot_created_at")
+        .select("id,status,snapshot_created_at,total_item_count,completed_item_count,must_do_item_count,completed_must_do_item_count,completion_rate,is_qualified,qualified_at,qualification_calculated_at")
         .eq("plan_date", date)
         .maybeSingle();
 
@@ -68,6 +76,14 @@ export function createSupabaseTodayDataSource(
             id: row.id,
             status: row.status,
             snapshotCreatedAt: row.snapshot_created_at,
+            totalItems: row.total_item_count,
+            completedItems: row.completed_item_count,
+            mustDoItems: row.must_do_item_count,
+            completedMustDoItems: row.completed_must_do_item_count,
+            completionRate: row.completion_rate,
+            isQualified: row.is_qualified,
+            qualifiedAt: row.qualified_at,
+            calculatedAt: row.qualification_calculated_at,
           }
         : null;
     },

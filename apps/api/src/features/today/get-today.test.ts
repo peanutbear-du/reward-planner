@@ -4,8 +4,23 @@ import { getToday } from "./get-today";
 import type { TodayDataSource } from "./today-data-source";
 
 const date = "2026-09-29";
+const qualification = {
+  totalItems: 7, completedItems: 3, mustDoItems: 1, completedMustDoItems: 0,
+  completionRate: 42.85, isQualified: false, qualifiedAt: null,
+  calculatedAt: "2026-09-29T02:00:00Z",
+};
 
 describe("getToday", () => {
+  it.each(["2026-10-25", "2026-10-26", "2026-10-27"])("reads stored qualification for %s without deriving it from global Tasks or visible rows", async (requested) => {
+    const persisted = { ...qualification, totalItems: 5, completedItems: 4,
+      mustDoItems: 2, completedMustDoItems: 2, completionRate: 80, isQualified: true,
+      qualifiedAt: "2026-10-25T01:00:00Z" };
+    const result = await getToday(requested, createDataSource({
+      getDailyPlan: async () => ({ id: "plan", status: "committed", snapshotCreatedAt: "2026-10-25T00:00:00Z", ...persisted }),
+    }), new Date("2026-10-26T12:00:00Z"));
+    expect(result.dailyStatus).toEqual({ available: true, ...persisted });
+    expect(result.execution.available).toBe(requested === "2026-10-26");
+  });
   it.each([
     ["2026-10-25T16:30:00Z", "Asia/Shanghai", "2026-10-26", "committed", true],
     ["2026-10-25T16:30:00Z", "Asia/Shanghai", "2026-10-25", "committed", false],
@@ -14,15 +29,15 @@ describe("getToday", () => {
   ] as const)("returns execution eligibility from server date/timezone: %s %s %s %s", async (now, timezone, requested, status, available) => {
     const result = await getToday(requested, createDataSource({
       getTimezone: async () => timezone,
-      getDailyPlan: async () => ({ id: "plan", status, snapshotCreatedAt: status === "committed" ? now : null }),
+      getDailyPlan: async () => ({ id: "plan", status, ...qualification, snapshotCreatedAt: status === "committed" ? now : null }),
     }), new Date(now));
     expect(result.execution).toEqual({ currentDate: timezone === "Asia/Shanghai" ? "2026-10-26" : "2026-10-25", available });
-    expect(result.dailyStatus).toEqual({ available: false });
+    expect(result.dailyStatus).toEqual(status === "committed" ? { available: true, ...qualification } : { available: false, reason: "draft" });
   });
 
   it("returns the per-day result instead of deriving completion from global Task state", async () => {
     const result = await getToday(date, createDataSource({
-      getDailyPlan: async () => ({ id: "plan", status: "committed", snapshotCreatedAt: "2026-09-29T00:00:00Z" }),
+      getDailyPlan: async () => ({ id: "plan", status: "committed", ...qualification, snapshotCreatedAt: "2026-09-29T00:00:00Z" }),
       getDailyPlanItems: async () => [dailyItem({ titleSnapshot: "Frozen title", plannedStartTimeSnapshot: "09:00:00",
         resultStatus: "completed", completedAtOnDay: "2026-09-29T01:00:00Z" })],
       getTasks: async () => [{ id: "task", title: "Changed current title" }],
@@ -32,7 +47,7 @@ describe("getToday", () => {
   });
   it.each(["must_do", "plan"] as const)("keeps committed Added Later %s separate and frozen", async (priority) => {
     const result = await getToday(date, createDataSource({
-      getDailyPlan: async () => ({ id: "committed", status: "committed", snapshotCreatedAt: "2026-09-29T01:00:00Z" }),
+      getDailyPlan: async () => ({ id: "committed", status: "committed", ...qualification, snapshotCreatedAt: "2026-09-29T01:00:00Z" }),
       getDailyPlanItems: async () => [
         dailyItem({ id: "initial-must", taskId: "must", priority: "must_do", titleSnapshot: "Initial Must-do" }),
         dailyItem({ id: "initial-plan", taskId: "plan", titleSnapshot: "Initial Plan" }),
@@ -47,7 +62,7 @@ describe("getToday", () => {
       id: "later-item", taskId: "later", origin: "added_later", priority, resultStatus: "pending",
       title: "Added Later frozen title", plannedStartTime: "11:00:00", plannedEndTime: "12:00:00",
     })]);
-    expect(result.dailyStatus).toEqual({ available: false });
+    expect(result.dailyStatus).toEqual({ available: true, ...qualification });
   });
 
   it("uses the current title and only times scheduled for the Draft date", async () => {
@@ -56,7 +71,7 @@ describe("getToday", () => {
       return [{ id: "planning-same-date", taskId: "same-date", startTime: "09:00:00", endTime: "10:00:00" }];
     });
     const result = await getToday(date, createDataSource({
-      getDailyPlan: async () => ({ id: "draft", status: "draft", snapshotCreatedAt: null }),
+      getDailyPlan: async () => ({ id: "draft", status: "draft", ...qualification, snapshotCreatedAt: null }),
       getDailyPlanItems: async () => [
         dailyItem({ id: "same", taskId: "same-date", titleSnapshot: "Provisional title" }),
         dailyItem({ id: "other", taskId: "other-date", plannedStartTimeSnapshot: "14:00:00", plannedEndTimeSnapshot: "15:00:00" }),
@@ -70,7 +85,7 @@ describe("getToday", () => {
     expect(result.items.plan[0]).toMatchObject({ title: "Current Task title", plannedStartTime: "09:00:00", plannedEndTime: "10:00:00" });
     expect(result.items.plan[1]).toMatchObject({ plannedStartTime: null, plannedEndTime: null });
     expect(result.items.addedLater).toEqual([]);
-    expect(result.dailyStatus).toEqual({ available: false });
+    expect(result.dailyStatus).toEqual({ available: false, reason: "draft" });
   });
 
   it("returns an empty Daily Plan while preserving independent timed Tasks", async () => {
@@ -106,7 +121,7 @@ describe("getToday", () => {
       },
     ]);
     expect(result.schedule.calendarEvents).toEqual([]);
-    expect(result.dailyStatus).toEqual({ available: false });
+    expect(result.dailyStatus).toEqual({ available: false, reason: "no_plan" });
     expect(result.activeProjects).toEqual({ available: false, items: [] });
   });
 
@@ -118,7 +133,7 @@ describe("getToday", () => {
         getDailyPlan: async () => ({
           id: "plan-draft",
           status: "draft",
-          snapshotCreatedAt: null,
+          ...qualification, snapshotCreatedAt: null,
         }),
         getDailyPlanItems: async () => [
           dailyItem({
@@ -222,7 +237,7 @@ describe("getToday", () => {
         getDailyPlan: async () => ({
           id: "plan-committed",
           status: "committed",
-          snapshotCreatedAt: "2026-09-29T01:00:00.000Z",
+          ...qualification, snapshotCreatedAt: "2026-09-29T01:00:00.000Z",
         }),
         getDailyPlanItems: async () => [
           dailyItem({

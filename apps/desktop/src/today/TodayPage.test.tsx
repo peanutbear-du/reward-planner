@@ -11,7 +11,7 @@ function empty(date: string): TodayResponse {
     execution: { currentDate: localDate(), available: false },
     items: { mustDo: [], plan: [], addedLater: [] },
     schedule: { timedTasks: [], calendarEvents: [] },
-    dailyStatus: { available: false }, activeProjects: { available: false, items: [] } };
+    dailyStatus: { available: false, reason: "no_plan" }, activeProjects: { available: false, items: [] } };
 }
 
 let days: Map<string, TodayResponse>;
@@ -92,6 +92,48 @@ async function add(title: string, later = false) {
 }
 
 describe("Today Desktop", () => {
+  it("renders persisted server qualification and refreshes it after Complete / Uncomplete and Added Later", async () => {
+    render(<TodayPage accessToken="browser-session" />); await ready();
+    await add("Qualification task");
+    fireEvent.click(screen.getByRole("button", { name: "完成今日计划" }));
+    await screen.findByText("计划已确认");
+    const server = fetchMock.getMockImplementation()!;
+    let release!: () => void;
+    const pending = new Promise<void>((resolve) => { release = resolve; });
+    fetchMock.mockImplementation(async (url, options) => {
+      if (url.pathname.endsWith("/complete")) await pending;
+      const result = await server(url, options);
+      // Fixture responses, not a frontend qualification implementation.
+      if (url.pathname.endsWith("/complete")) day().dailyStatus = {
+        available: true, totalItems: 1, completedItems: 1, mustDoItems: 0,
+        completedMustDoItems: 0, completionRate: 100, isQualified: true,
+        qualifiedAt: "2026-10-26T01:00:00Z", calculatedAt: "2026-10-26T01:00:00Z",
+      };
+      if (url.pathname.endsWith("/uncomplete")) day().dailyStatus = {
+        available: true, totalItems: 1, completedItems: 0, mustDoItems: 0,
+        completedMustDoItems: 0, completionRate: 0, isQualified: false,
+        qualifiedAt: null, calculatedAt: "2026-10-26T02:00:00Z",
+      };
+      if (url.pathname.endsWith("/add-later")) day().dailyStatus = {
+        available: true, totalItems: 2, completedItems: 0, mustDoItems: 0,
+        completedMustDoItems: 0, completionRate: 0, isQualified: false,
+        qualifiedAt: null, calculatedAt: "2026-10-26T03:00:00Z",
+      };
+      return result;
+    });
+    fireEvent.click(screen.getByRole("checkbox"));
+    await screen.findByText("正在保存…");
+    expect(screen.queryByText("当日已达标")).toBeNull();
+    release();
+    await screen.findByText("当日已达标");
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("100");
+    fireEvent.click(screen.getByRole("checkbox"));
+    await screen.findByText("当日尚未达标");
+    expect(screen.getByText("0 / 1")).toBeTruthy();
+    await add("New denominator", true);
+    await screen.findByText("0 / 2");
+  });
+
   it("keeps the add form collapsed by default and preserves input when toggled", async () => {
     render(<TodayPage accessToken="browser-session" />); await ready();
     expect(screen.queryByRole("form", { name: "新增任务" })).toBeNull();
@@ -150,7 +192,7 @@ describe("Today Desktop", () => {
     expect(created).toBe(3);
     view.unmount(); render(<TodayPage accessToken="browser-session" />);
     await screen.findByText("计划已确认"); await screen.findByText("Read later");
-    expect(screen.getAllByText("尚未实现")).toHaveLength(2);
+    expect(screen.getAllByText("尚未实现")).toHaveLength(1);
     expect(screen.getAllByRole("checkbox")).toHaveLength(2);
   });
 

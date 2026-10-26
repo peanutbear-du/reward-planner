@@ -91,9 +91,17 @@ export async function getToday(
       }),
       calendarEvents: [],
     },
-    dailyStatus: {
-      available: false,
-    },
+    dailyStatus: dailyPlan?.status === "committed" ? {
+      available: true,
+      totalItems: dailyPlan.totalItems,
+      completedItems: dailyPlan.completedItems,
+      mustDoItems: dailyPlan.mustDoItems,
+      completedMustDoItems: dailyPlan.completedMustDoItems,
+      completionRate: dailyPlan.completionRate,
+      isQualified: dailyPlan.isQualified,
+      qualifiedAt: dailyPlan.qualifiedAt,
+      calculatedAt: dailyPlan.calculatedAt,
+    } : { available: false, reason: dailyPlan ? "draft" : "no_plan" },
     activeProjects: {
       available: false,
       items: [],

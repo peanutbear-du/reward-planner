@@ -1,4 +1,6 @@
 export type {
+  DailyQualification,
+  DailyStatus,
   DailyPlanStatus,
   DailyPlanItemOrigin,
   DailyPlanItemPriority,
