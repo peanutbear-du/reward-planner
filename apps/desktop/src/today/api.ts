@@ -28,7 +28,7 @@ export function todayApi(accessToken: string) {
 export function requestError(error: unknown): string {
   if (error instanceof TaskExecutionApiClientError) {
     if (error.code === "TASK_DATE_NOT_CURRENT") return "只能更新用户时区当天的执行状态，请刷新日期。";
-    if (error.code === "DAILY_PLAN_NOT_COMMITTED") return "请先完成今日计划，再勾选任务。";
+    if (error.code === "DAILY_PLAN_NOT_COMMITTED") return "请先确认今日计划，再勾选任务。";
     if (error.code === "DAILY_ITEM_EXECUTION_NOT_ALLOWED") return "此任务已改期、取消或不再允许执行，请刷新。";
     if (error.code === "INVALID_USER_TIMEZONE") return "用户时区无效，暂时无法更新执行状态。";
   }

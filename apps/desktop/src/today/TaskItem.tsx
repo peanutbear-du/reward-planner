@@ -25,8 +25,8 @@ export function TaskItem({ item, editable, disabled, executionAvailable, onCompl
       <div className="task-copy">
         <span>{item.title}</span>
         <small>
-          {results[item.resultStatus]}
-          {item.plannedStartTime ? ` · ${item.plannedStartTime.slice(0, 5)}` : ""}
+          {item.resultStatus !== "pending" ? `${results[item.resultStatus]} · ` : ""}
+          {item.plannedStartTime ? `${item.plannedStartTime.slice(0, 5)}${item.plannedEndTime ? `–${item.plannedEndTime.slice(0, 5)}` : ""}` : "未安排时间"}
           {item.origin === "added_later" ? ` · ${item.priority === "must_do" ? "必须完成" : "计划"}` : ""}
           {item.rescheduledToDate ? ` → ${item.rescheduledToDate}` : ""}
         </small>

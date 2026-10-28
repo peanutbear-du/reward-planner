@@ -355,6 +355,22 @@ Acceptance Criteria:
 
 ---
 
+## RP-UI-02 — Today Desktop Figma Fidelity & Interaction
+
+Status: DONE
+
+Scope:
+
+- Match existing Today Desktop to Figma node 13:2 at 1440×1024 / 100% zoom.
+- Refine Sidebar, Header, Tasks, Schedule, Daily Status and Project Focus using existing tokens.
+- Use compact add/edit/confirm actions, optional Draft editing and inline Task creation.
+- Rename the visible Commit action to 确认今日计划 and require a brief confirmation; retain the existing immutable Snapshot command.
+- Preserve Auth, API commands, persisted qualification and explicit unavailable states; no backend/database changes or new dependencies.
+- Update the PRD copy and retain reference / Draft / Committed screenshots plus frontend verification results.
+- Await review; do not mark DONE or commit/push.
+
+---
+
 # M2 — Daily Qualification + History
 
 ## RP-M2-01 — Complete / uncomplete Task

@@ -147,7 +147,11 @@ User edits the Draft Today plan.
 
 Button:
 
-**完成今日计划 / Complete Plan**
+**确认今日计划 / Confirm Today's Plan**
+
+Desktop presents this action as a compact confirmation icon with the same
+accessible label / tooltip. A brief confirmation explains that the Initial
+Snapshot will be saved; cancelling does not send the Commit command.
 
 Meaning:
 

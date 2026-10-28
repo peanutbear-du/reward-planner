@@ -1,0 +1,225 @@
+{
+  "draft": {
+    "boxes": [
+      {
+        "bottom": 1024,
+        "class": "sidebar",
+        "height": 1024,
+        "left": 0,
+        "right": 220,
+        "top": 0,
+        "width": 220,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "bottom": 984,
+        "class": "theme-swatch",
+        "height": 12,
+        "left": 30,
+        "right": 42,
+        "top": 972,
+        "width": 12,
+        "x": 30,
+        "y": 972
+      },
+      {
+        "bottom": 116,
+        "class": "page-header",
+        "height": 80,
+        "left": 264,
+        "right": 1396,
+        "top": 36,
+        "width": 1132,
+        "x": 264,
+        "y": 36
+      },
+      {
+        "bottom": 652,
+        "class": "daily-plan",
+        "height": 520,
+        "left": 264,
+        "right": 1012,
+        "top": 132,
+        "width": 748,
+        "x": 264,
+        "y": 132
+      },
+      {
+        "bottom": 244,
+        "class": "task-item task-item-must",
+        "height": 64,
+        "left": 272,
+        "right": 1004,
+        "top": 180,
+        "width": 732,
+        "x": 272,
+        "y": 180
+      },
+      {
+        "bottom": 320,
+        "class": "task-item task-item-must",
+        "height": 64,
+        "left": 272,
+        "right": 1004,
+        "top": 256,
+        "width": 732,
+        "x": 272,
+        "y": 256
+      },
+      {
+        "bottom": 448,
+        "class": "task-item ",
+        "height": 64,
+        "left": 272,
+        "right": 1004,
+        "top": 384,
+        "width": 732,
+        "x": 272,
+        "y": 384
+      },
+      {
+        "bottom": 524,
+        "class": "task-item ",
+        "height": 64,
+        "left": 272,
+        "right": 1004,
+        "top": 460,
+        "width": 732,
+        "x": 272,
+        "y": 460
+      },
+      {
+        "bottom": 600,
+        "class": "task-item ",
+        "height": 64,
+        "left": 272,
+        "right": 1004,
+        "top": 536,
+        "width": 732,
+        "x": 272,
+        "y": 536
+      },
+      {
+        "bottom": 807,
+        "class": "schedule-section",
+        "height": 135,
+        "left": 264,
+        "right": 1012,
+        "top": 672,
+        "width": 748,
+        "x": 264,
+        "y": 672
+      },
+      {
+        "bottom": 398,
+        "class": "context-rail",
+        "height": 266,
+        "left": 1036,
+        "right": 1396,
+        "top": 132,
+        "width": 360,
+        "x": 1036,
+        "y": 132
+      }
+    ],
+    "dpr": 1,
+    "height": 1024,
+    "scale": 1,
+    "width": 1440
+  },
+  "committed": {
+    "boxes": [
+      {
+        "bottom": 332.5,
+        "class": "",
+        "height": 1,
+        "left": 272,
+        "right": 1004,
+        "top": 331.5,
+        "width": 732,
+        "x": 272,
+        "y": 331.5
+      },
+      {
+        "bottom": 776,
+        "class": "schedule-accent",
+        "height": 64,
+        "left": 342,
+        "right": 345,
+        "top": 712,
+        "width": 3,
+        "x": 342,
+        "y": 712
+      },
+      {
+        "bottom": 422,
+        "class": "context-section daily-status",
+        "height": 290,
+        "left": 1036,
+        "right": 1396,
+        "top": 132,
+        "width": 360,
+        "x": 1036,
+        "y": 132
+      },
+      {
+        "bottom": 350,
+        "class": "daily-qualification",
+        "height": 61,
+        "left": 1055,
+        "right": 1377,
+        "top": 289,
+        "width": 322,
+        "x": 1055,
+        "y": 289
+      },
+      {
+        "bottom": 403,
+        "class": "daily-reward-unavailable",
+        "height": 39,
+        "left": 1055,
+        "right": 1377,
+        "top": 364,
+        "width": 322,
+        "x": 1055,
+        "y": 364
+      },
+      {
+        "bottom": 564,
+        "class": "context-section project-focus",
+        "height": 126,
+        "left": 1036,
+        "right": 1396,
+        "top": 438,
+        "width": 360,
+        "x": 1036,
+        "y": 438
+      }
+    ],
+    "dpr": 1,
+    "height": 1024,
+    "images": [
+      {
+        "asset": "plan-divider.svg",
+        "complete": true,
+        "width": 732,
+        "height": 1
+      },
+      {
+        "asset": "task-accent.svg",
+        "complete": true,
+        "width": 3,
+        "height": 64
+      }
+    ],
+    "scale": 1,
+    "width": 1440,
+    "fontEvidence": {
+      "count": 1,
+      "interReady": true,
+      "numericFamily": "Inter, sans-serif",
+      "status": "loaded"
+    }
+  }
+}

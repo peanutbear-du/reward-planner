@@ -6,6 +6,13 @@ import { DailyStatus } from "./DailyStatus";
 afterEach(cleanup);
 
 describe("persisted Daily Status presentation", () => {
+  it("labels a historical selection without changing its stored qualification", () => {
+    render(<DailyStatus isToday={false} failed={false} status={{ available: true, totalItems: 5,
+      completedItems: 4, completionRate: 80, mustDoItems: 0, completedMustDoItems: 0,
+      isQualified: true, qualifiedAt: "2026-10-26T00:00:00Z", calculatedAt: "2026-10-26T00:00:00Z" }} />);
+    expect(screen.getByRole("heading", { name: "当日状态" })).toBeTruthy();
+    expect(screen.getByText("当日已达标")).toBeTruthy();
+  });
   it.each([
     [{ available: false, reason: "no_plan" } as const, "尚无每日计划。"],
     [{ available: false, reason: "draft" } as const, "确认计划后显示完成情况。"],
@@ -20,9 +27,10 @@ describe("persisted Daily Status presentation", () => {
       isQualified, qualifiedAt: isQualified ? "2026-10-26T00:00:00Z" : null,
       calculatedAt: "2026-10-26T00:00:00Z" }} />);
     expect(screen.getByText("4 / 5")).toBeTruthy();
-    expect(screen.getByText(isQualified ? "当日已达标" : "当日尚未达标")).toBeTruthy();
+    expect(screen.getByText(isQualified ? "今日已达标" : "今日尚未达标")).toBeTruthy();
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("80");
-    expect(screen.queryByText(/奖励|已计入/)).toBeNull();
+    expect(screen.getByText("每日奖励尚未接入")).toBeTruthy();
+    expect(screen.queryByText(/已计入|\+1/)).toBeNull();
   });
   it("handles N=0 without presenting a qualified day", () => {
     render(<DailyStatus failed={false} status={{ available: true, totalItems: 0,

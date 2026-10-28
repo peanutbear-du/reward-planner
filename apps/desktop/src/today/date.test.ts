@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { localDate, shiftDate } from "./date";
+import { formatDate, localDate, shiftDate } from "./date";
 
 describe("local calendar dates", () => {
+  it("uses the compact Figma date caption", () => {
+    expect(formatDate("2025-09-21")).toBe("9月21日 · 星期日");
+  });
   it("uses browser calendar fields, even when UTC is on the previous day", () => {
     const date = new Date("2026-10-21T16:30:00Z");
     // Simulate the local fields of Asia/Shanghai without depending on test host TZ.

@@ -9,9 +9,10 @@ export function shiftDate(value: string, amount: number): string {
 }
 
 export function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric", month: "long", day: "numeric", weekday: "long",
-  }).format(parseLocalDate(value));
+  const date = parseLocalDate(value);
+  const day = new Intl.DateTimeFormat("zh-CN", { month: "long", day: "numeric" }).format(date);
+  const weekday = new Intl.DateTimeFormat("zh-CN", { weekday: "long" }).format(date);
+  return `${day} · ${weekday}`;
 }
 
 function parseLocalDate(value: string): Date {
