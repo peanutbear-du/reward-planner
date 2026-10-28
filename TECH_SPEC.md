@@ -427,6 +427,12 @@ Constraint:
 
 Unique source identity prevents duplicate reward.
 
+RP-M2-03 installs Daily sources only: unique `(user_id, source_type, source_id)`,
+`amount = 1`, and a composite `(source_id, user_id)` foreign key to Daily Plans.
+Milestone sources require a later migration with their owned source relation;
+they cannot be inserted into this Daily-only schema yet. Authenticated clients
+have owner-scoped SELECT only; internal reward functions are not callable RPCs.
+
 ### 6.14 reward_allocations
 
 Fields:
@@ -570,6 +576,21 @@ Only transitions matter:
 - true → false = reverse +1
 - true → true = no additional reward
 - false → false = no reward action
+
+RP-M2-03 attaches an internal reward trigger to persisted qualification changes,
+inside the same existing RPC transaction and plan-first lock. Grant creates the
+unique Daily event or reactivates its original ID / created_at; reversal sets
+`status = reversed` and the actual `reversed_at`. Reactivation clears reversed_at.
+Unchanged qualification does not write the ledger. Any reward failure rolls back
+the command, including Task, Daily Item and qualification changes. Existing API
+response/effect contracts remain unchanged; reward UI and allocation are deferred.
+
+The M2-03 migration blocks concurrent plan writes while installing the trigger
+and backfilling currently persisted qualified Committed plans. Its internal
+per-plan reconciliation is idempotent. Backfill does not recalculate qualification
+or change any Plan / Task / Item snapshot; event created_at is observation time,
+never an inferred historical achievement time. Unqualified days have no invented
+reversal event. Migration lock and statement timeouts fail atomically for retry.
 
 ### 8.5 reschedule
 

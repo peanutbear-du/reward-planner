@@ -284,16 +284,32 @@ describe.skipIf(!process.env.TASK_EXECUTION_SMOKE_API_BASE_URL && !qualification
       expect((await verify(b, {})).plan).toEqual(bBefore);
       pass("historical_result_title_time_snapshot_and_basic_ownership_preserved");
 
-      step = "no Reward Event and fixture inventory";
-      expect(await rewards()).toEqual(rewardsBefore);
-      qualificationEvidence.rewardEvents = { tablePresent: rewardTable, before: rewardsBefore.length, after: 0,
-        basis: rewardTable ? "privileged reads restricted to both fresh test owners" : "reward_events is absent from privileged REST schema; no reward storage exists yet" };
+      step = "qualification-compatible Reward Event and fixture inventory";
+      const rewardsAfter = await rewards();
+      if (!rewardTable) expect(rewardsAfter).toEqual(rewardsBefore);
+      else {
+        // RP-M2-03 now emits rewards in the qualification transaction. Keep this
+        // older qualification smoke usable on either side of that migration.
+        const planRows = (await Promise.all(users.map((user) => rows(user, "daily_plans", "select=*")))).flat();
+        expect(new Set(rewardsAfter.map((event) => `${event.user_id}:${event.source_type}:${event.source_id}`)).size).toBe(rewardsAfter.length);
+        for (const event of rewardsAfter) {
+          const source = planRows.find((plan) => plan.id === event.source_id && plan.user_id === event.user_id);
+          expect(source, "reward has an owned source plan").toBeDefined();
+          expect(event).toMatchObject({ source_type: "DAILY_QUALIFIED", amount: 1,
+            status: source?.is_qualified ? "active" : "reversed" });
+        }
+        for (const plan of planRows.filter((plan) => plan.is_qualified)) {
+          expect(rewardsAfter.filter((event) => event.source_id === plan.id)).toHaveLength(1);
+        }
+      }
+      qualificationEvidence.rewardEvents = { tablePresent: rewardTable, before: rewardsBefore.length, after: rewardsAfter.length,
+        basis: rewardTable ? "owned unique Daily sources match persisted qualification after RP-M2-03" : "reward_events is absent from privileged REST schema; no reward storage exists yet" };
       qualificationEvidence.inventory = await Promise.all(users.map(async (user) => ({ owner: user.id,
         tasks: (await rows(user, "tasks", "select=id")).length, plans: (await rows(user, "daily_plans", "select=id")).length,
         items: (await rows(user, "daily_plan_items", "select=id")).length,
         planningItems: (await rows(user, "planning_items", "select=id")).length,
         finalDailyStatus: (await query(user, today)).dailyStatus })));
-      pass("fresh_get_today_matches_persisted_counters_flags_and_times_without_reward_events");
+      pass("fresh_get_today_matches_persisted_counters_flags_and_times");
     }
 
     try {

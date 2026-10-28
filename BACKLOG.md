@@ -412,7 +412,7 @@ Acceptance tests:
 
 ## RP-M2-03 — Daily Reward Event
 
-Status: TODO
+Status: DONE
 
 Acceptance Criteria:
 
