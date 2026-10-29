@@ -44,6 +44,7 @@ export async function getToday(
     plan: [],
     addedLater: [],
   };
+  const currentDate = serverCalendarDate(now, timezone ?? "UTC");
 
   for (const item of dailyPlanItems) {
     const todayItem = toTodayItem(
@@ -51,6 +52,7 @@ export async function getToday(
       dailyPlan?.status === "committed",
       tasksById,
       planningItemsByTaskId,
+      date <= currentDate,
     );
 
     if (item.origin === "added_later") {
@@ -62,7 +64,6 @@ export async function getToday(
     }
   }
 
-  const currentDate = serverCalendarDate(now, timezone ?? "UTC");
   return {
     date,
     timezone,
@@ -114,8 +115,10 @@ function toTodayItem(
   isCommitted: boolean,
   tasksById: Map<string, TaskRecord>,
   planningItemsByTaskId: Map<string, PlanningItemRecord>,
+  canRescheduleDate: boolean,
 ): TodayItem {
   const planningItem = planningItemsByTaskId.get(item.taskId);
+  const task = tasksById.get(item.taskId);
 
   return {
     id: item.id,
@@ -134,6 +137,8 @@ function toTodayItem(
       : planningItem?.endTime ?? null,
     completedAtOnDay: item.completedAtOnDay,
     rescheduledToDate: item.rescheduledToDate,
+    canReschedule: isCommitted && canRescheduleDate && item.resultStatus === "pending"
+      && task?.status === "open" && task.projectId === null && task.milestoneId === null,
   };
 }
 

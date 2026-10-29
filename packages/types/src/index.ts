@@ -29,3 +29,4 @@ export type {
 export type { CommitDailyPlanRequest, CommitDailyPlanResponse } from "./commit-daily-plan";
 export type { AddLaterRequest, AddLaterResponse } from "./add-later";
 export type { TaskExecutionRequest, TaskExecutionData, TaskExecutionResponse, TaskExecutionErrorCode } from "./task-execution";
+export type { TaskRescheduleRequest, TaskRescheduleData, TaskRescheduleResponse, TaskRescheduleErrorCode } from "./task-reschedule";

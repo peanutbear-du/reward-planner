@@ -22,6 +22,7 @@ export interface TodayItem {
   plannedEndTime: string | null;
   completedAtOnDay: string | null;
   rescheduledToDate: string | null;
+  canReschedule: boolean;
 }
 
 export interface ScheduleTask {

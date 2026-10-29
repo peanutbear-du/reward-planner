@@ -11,6 +11,38 @@ const qualification = {
 };
 
 describe("getToday", () => {
+  it("reads rescheduled historical truth after later global completion without changing snapshots or Daily counters", async () => {
+    const result = await getToday("2026-09-21", createDataSource({
+      getDailyPlan: async () => ({ id: "history", status: "committed", snapshotCreatedAt: "2026-09-21T00:00:00Z", ...qualification }),
+      getDailyPlanItems: async () => [dailyItem({ resultStatus: "rescheduled", rescheduledToDate: "2026-09-22",
+        titleSnapshot: "Historical title", plannedStartTimeSnapshot: "09:00:00", plannedEndTimeSnapshot: "10:00:00" })],
+      getTasks: async () => [{ id: "task", title: "Later global title", status: "completed", projectId: null, milestoneId: null }],
+    }), new Date("2026-09-23T12:00:00Z"));
+    expect(result.items.plan[0]).toMatchObject({ taskId: "task", resultStatus: "rescheduled", rescheduledToDate: "2026-09-22",
+      title: "Historical title", plannedStartTime: "09:00:00", plannedEndTime: "10:00:00", canReschedule: false });
+    expect(result.dailyStatus).toEqual({ available: true, ...qualification });
+  });
+  it.each([
+    ["2026-09-21", "committed", "pending", "open", null, null, true],
+    ["2026-09-20", "committed", "pending", "open", null, null, true],
+    ["2026-09-22", "committed", "pending", "open", null, null, false],
+    ["2026-09-21", "draft", "pending", "open", null, null, false],
+    ["2026-09-21", "committed", "completed", "open", null, null, false],
+    ["2026-09-21", "committed", "cancelled", "open", null, null, false],
+    ["2026-09-21", "committed", "rescheduled", "open", null, null, false],
+    ["2026-09-21", "committed", "incomplete", "open", null, null, false],
+    ["2026-09-21", "committed", "pending", "completed", null, null, false],
+    ["2026-09-21", "committed", "pending", "open", "project", null, false],
+    ["2026-09-21", "committed", "pending", "open", null, "milestone", false],
+  ] as const)("returns server-owned reschedule eligibility: %s %s %s %s %s %s", async (requested, status, resultStatus, taskStatus, projectId, milestoneId, expected) => {
+    const result = await getToday(requested, createDataSource({
+      getDailyPlan: async () => ({ id: "plan", status, snapshotCreatedAt: "2026-09-21T00:00:00Z", ...qualification }),
+      getDailyPlanItems: async () => [dailyItem({ resultStatus })],
+      getTasks: async () => [{ id: "task", title: "Current title", status: taskStatus, projectId, milestoneId }],
+    }), new Date("2026-09-21T12:00:00Z"));
+    expect(result.items.plan[0].canReschedule).toBe(expected);
+    expect(result.items.plan[0].resultStatus).toBe(resultStatus);
+  });
   it.each(["2026-10-25", "2026-10-26", "2026-10-27"])("reads stored qualification for %s without deriving it from global Tasks or visible rows", async (requested) => {
     const persisted = { ...qualification, totalItems: 5, completedItems: 4,
       mustDoItems: 2, completedMustDoItems: 2, completionRate: 80, isQualified: true,
@@ -40,7 +72,7 @@ describe("getToday", () => {
       getDailyPlan: async () => ({ id: "plan", status: "committed", ...qualification, snapshotCreatedAt: "2026-09-29T00:00:00Z" }),
       getDailyPlanItems: async () => [dailyItem({ titleSnapshot: "Frozen title", plannedStartTimeSnapshot: "09:00:00",
         resultStatus: "completed", completedAtOnDay: "2026-09-29T01:00:00Z" })],
-      getTasks: async () => [{ id: "task", title: "Changed current title" }],
+      getTasks: async () => [{ id: "task", title: "Changed current title", status: "open", projectId: null, milestoneId: null }],
     }));
     expect(result.items.plan[0]).toMatchObject({ title: "Frozen title", plannedStartTime: "09:00:00",
       resultStatus: "completed", completedAtOnDay: "2026-09-29T01:00:00Z" });
@@ -54,7 +86,7 @@ describe("getToday", () => {
         dailyItem({ id: "later-item", taskId: "later", origin: "added_later", priority,
           titleSnapshot: "Added Later frozen title", plannedStartTimeSnapshot: "11:00:00", plannedEndTimeSnapshot: "12:00:00" }),
       ],
-      getTasks: async () => [{ id: "must", title: "Changed Must-do" }, { id: "plan", title: "Changed Plan" }, { id: "later", title: "Changed Later" }],
+      getTasks: async () => [{ id: "must", title: "Changed Must-do", status: "open", projectId: null, milestoneId: null }, { id: "plan", title: "Changed Plan", status: "open", projectId: null, milestoneId: null }, { id: "later", title: "Changed Later", status: "open", projectId: null, milestoneId: null }],
     }));
     expect(result.items.mustDo.map((item) => item.id)).toEqual(["initial-must"]);
     expect(result.items.plan.map((item) => item.id)).toEqual(["initial-plan"]);
@@ -77,7 +109,7 @@ describe("getToday", () => {
         dailyItem({ id: "other", taskId: "other-date", plannedStartTimeSnapshot: "14:00:00", plannedEndTimeSnapshot: "15:00:00" }),
       ],
       getTasks: async () => [
-        { id: "same-date", title: "Current Task title" }, { id: "other-date", title: "Other date Task" },
+        { id: "same-date", title: "Current Task title", status: "open", projectId: null, milestoneId: null }, { id: "other-date", title: "Other date Task", status: "open", projectId: null, milestoneId: null },
       ],
       getPlanningItemsForTasks,
     }));
@@ -102,7 +134,7 @@ describe("getToday", () => {
           },
         ],
         getTasks: async () => [
-          { id: "task-independent", title: "Independent timed Task" },
+          { id: "task-independent", title: "Independent timed Task", status: "open", projectId: null, milestoneId: null },
         ],
       }),
     );
@@ -190,10 +222,10 @@ describe("getToday", () => {
           },
         ],
         getTasks: async () => [
-          { id: "task-must-do", title: "Current Must-do title" },
-          { id: "task-plan", title: "Current Plan title" },
-          { id: "task-added-later", title: "Current Added Later title" },
-          { id: "task-independent", title: "Independent Task" },
+          { id: "task-must-do", title: "Current Must-do title", status: "open", projectId: null, milestoneId: null },
+          { id: "task-plan", title: "Current Plan title", status: "open", projectId: null, milestoneId: null },
+          { id: "task-added-later", title: "Current Added Later title", status: "open", projectId: null, milestoneId: null },
+          { id: "task-independent", title: "Independent Task", status: "open", projectId: null, milestoneId: null },
         ],
       }),
     );
@@ -257,7 +289,7 @@ describe("getToday", () => {
           },
         ],
         getTasks: async () => [
-          { id: "task-committed", title: "Changed global title" },
+          { id: "task-committed", title: "Changed global title", status: "open", projectId: null, milestoneId: null },
         ],
       }),
     );

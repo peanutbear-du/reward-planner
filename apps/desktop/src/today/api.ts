@@ -1,6 +1,7 @@
 import {
   addLater, commitDailyPlan, createTask, getToday,
   removeDraftTodayItem, upsertDraftTodayItem, completeTask, uncompleteTask, TaskExecutionApiClientError,
+  rescheduleTask, TaskRescheduleApiClientError,
 } from "@reward-planner/api-client";
 import type { DailyPlanItemPriority } from "@reward-planner/types";
 
@@ -22,10 +23,20 @@ export function todayApi(accessToken: string) {
     commit: (date: string) => commitDailyPlan({ ...options, input: { date } }),
     execute: (date: string, taskId: string, completed: boolean) =>
       (completed ? completeTask : uncompleteTask)({ ...options, input: { date, taskId } }),
+    reschedule: (date: string, taskId: string, targetDate: string) =>
+      rescheduleTask({ ...options, input: { date, taskId, targetDate } }),
   };
 }
 
 export function requestError(error: unknown): string {
+  if (error instanceof TaskRescheduleApiClientError) {
+    if (error.code === "INVALID_RESCHEDULE_DATE") return "目标日期须晚于用户时区今天及原日期，请刷新后重新选择。";
+    if (error.code === "RESCHEDULE_TARGET_CONFLICT") return "目标日期已有此任务条目，无法覆盖，请选择其他日期。";
+    if (error.code === "RESCHEDULE_PLANNING_CONFLICT") return "此任务已有其他日期的排期，请刷新并核对安排。";
+    if (error.code === "TASK_ALREADY_RESCHEDULED") return "此条目已改期至其他日期，请刷新查看。";
+    if (["TASK_RESCHEDULE_NOT_ALLOWED", "DAILY_ITEM_RESCHEDULE_NOT_ALLOWED"].includes(error.code ?? "")) return "只能改期已确认计划中待完成的普通任务，请刷新。";
+    if (error.code === "INVALID_USER_TIMEZONE") return "用户时区无效，暂时无法改期。";
+  }
   if (error instanceof TaskExecutionApiClientError) {
     if (error.code === "TASK_DATE_NOT_CURRENT") return "只能更新用户时区当天的执行状态，请刷新日期。";
     if (error.code === "DAILY_PLAN_NOT_COMMITTED") return "请先确认今日计划，再勾选任务。";

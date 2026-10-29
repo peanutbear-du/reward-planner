@@ -603,6 +603,40 @@ If item is in historical/current Daily Plan:
 
 Do not fabricate future history in advance.
 
+RP-M2-04 implements ordinary Task history rescheduling through
+`POST /api/commands/task/reschedule` → authenticated `reschedule_task(date, task_id, target_date)`.
+New transitions require an owned Committed source Plan on/before user-timezone
+Today, an open Task without Project/Milestone assignment, and a pending source
+Item. Target must be strictly later than both Today and the source date. Source
+identity, title/time snapshots, origin and priority remain frozen; only result,
+rescheduled_to_date and updated_at change. No global Task state is changed.
+
+An existing Planning Item retains its time pair and other metadata while its date
+changes. Without one, a new owned Planning Item copies the source's legal time
+snapshots. No destination Plan/Item is created or changed. Any existing destination
+Item for the same Task, including Draft/Committed or a terminal result, rejects
+the command. User-confirmed conflict rule: an intervening Planning date other than
+source/target also rejects, rather than overwriting a later arrangement.
+
+Lock order: settings SHARE → source Plan UPDATE → existing destination Plan UPDATE
+→ Task UPDATE → source Item UPDATE → Planning UPDATE. Source precedes target by
+date; no destination Plan lock is acquired while holding Task/Item/Planning locks.
+The Task lock also serializes destination membership creation against existing
+Draft/Add Later commands, including a destination Plan initially absent. A later
+explicit Draft/Add Later command may add membership after reschedule commits;
+reschedule itself never adds that membership.
+
+Same-source/same-target retries acknowledge immutable recorded history without
+rewriting timestamps or restoring the Planning date, even after later scheduling
+or completion; different-target retries reject. Relative-to-Today validation
+applies to new transitions. Existing M2-02/M2-03 triggers remain the only authority
+for qualification/rewards; pending→rescheduled keeps N and completed counts the
+same. Errors abort both Planning and Item writes in the same RPC transaction.
+GET Today exposes server-derived canReschedule; this is a UI hint, and SQL always
+revalidates. The existing Added Later command DTO does not include this GET-only
+projection. Desktop refetches after success and displays the original Item as
+“已改期 → 目标日期”; completion on another date cannot rewrite that historical result.
+
 ---
 
 ## 9. Milestone Business Logic

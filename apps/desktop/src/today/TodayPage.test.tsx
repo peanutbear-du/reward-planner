@@ -38,6 +38,9 @@ beforeEach(() => {
       const date = url.searchParams.get("date")!;
       const data = days.get(date) ?? empty(date);
       data.execution = { currentDate: executionDate, available: date === executionDate && data.dailyPlan?.status === "committed" };
+      for (const item of [...data.items.mustDo, ...data.items.plan, ...data.items.addedLater]) {
+        item.canReschedule = data.dailyPlan?.status === "committed" && date <= executionDate && item.resultStatus === "pending";
+      }
       return Response.json(data);
     }
     const input = JSON.parse(options.body as string);
@@ -48,7 +51,10 @@ beforeEach(() => {
     }
     const current = days.get(input.date) ?? empty(input.date);
     days.set(input.date, current);
-    if (url.pathname.endsWith("/complete") || url.pathname.endsWith("/uncomplete")) {
+    if (url.pathname.endsWith("/reschedule")) {
+      const item = [...current.items.mustDo, ...current.items.plan, ...current.items.addedLater].find((entry) => entry.taskId === input.taskId)!;
+      item.resultStatus = "rescheduled"; item.rescheduledToDate = input.targetDate; item.canReschedule = false;
+    } else if (url.pathname.endsWith("/complete") || url.pathname.endsWith("/uncomplete")) {
       if (failExecution) return Response.json({ error: "TASK_DATE_NOT_CURRENT" }, { status: 409 });
       const item = [...current.items.mustDo, ...current.items.plan, ...current.items.addedLater].find((entry) => entry.taskId === input.taskId)!;
       const completed = url.pathname.endsWith("/complete");
@@ -65,7 +71,7 @@ beforeEach(() => {
       current.dailyPlan ??= { id: "daily", status: "draft", snapshotCreatedAt: null };
       const item: TodayItem = { id: input.taskId, taskId: input.taskId, title: titles.get(input.taskId)!,
         origin: added ? "added_later" : "initial", priority: input.priority, resultStatus: "pending",
-        plannedStartTime: null, plannedEndTime: null, completedAtOnDay: null, rescheduledToDate: null };
+        plannedStartTime: null, plannedEndTime: null, completedAtOnDay: null, rescheduledToDate: null, canReschedule: false };
       if (added) current.items.addedLater.push(item);
       else {
         current.items.mustDo = current.items.mustDo.filter((old) => old.taskId !== input.taskId);
@@ -397,6 +403,91 @@ describe("Today Desktop", () => {
     fireEvent.click(screen.getByRole("button", { name: "刷新" }));
     await waitFor(() => expect((screen.getByRole("checkbox") as HTMLInputElement).disabled).toBe(true));
     expect((screen.getByRole("checkbox") as HTMLInputElement).checked).toBe(false);
+  });
+
+  it("reschedules a historical pending item using server Today, waits for success and reloads history", async () => {
+    executionDate = shiftDate(localDate(), 1); // Browser date is historical in this user's timezone.
+    const view = render(<TodayPage accessToken="browser-session" />); await ready();
+    await add("Historical pending"); await confirmPlan();
+    const marker = screen.getByRole("checkbox") as HTMLInputElement;
+    expect(marker.disabled).toBe(true);
+    const server = fetchMock.getMockImplementation()!;
+    let release!: () => void;
+    const pending = new Promise<void>((resolve) => { release = resolve; });
+    fetchMock.mockImplementation(async (url, options) => {
+      if (url.pathname.endsWith("/reschedule")) await pending;
+      return server(url, options);
+    });
+    fireEvent.click(await screen.findByRole("button", { name: "改期Historical pending" }));
+    const dialog = screen.getByRole("dialog", { name: "改期任务" });
+    const input = screen.getByLabelText("目标日期") as HTMLInputElement;
+    expect(input.min).toBe(shiftDate(executionDate, 1));
+    const targetDate = shiftDate(executionDate, 2);
+    fireEvent.change(input, { target: { value: targetDate } });
+    fireEvent.click(screen.getByRole("button", { name: "确认改期" }));
+    await screen.findByText("正在改期…");
+    expect(input.disabled).toBe(true);
+    expect((within(dialog).getByRole("button", { name: "取消" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent(dialog, new Event("cancel", { cancelable: true }));
+    expect(screen.getByRole("dialog")).toBeTruthy();
+    expect(day().items.plan[0].resultStatus).toBe("pending");
+    release();
+    await screen.findByText(new RegExp(`已改期 → ${targetDate}`));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect((screen.getByRole("checkbox") as HTMLInputElement).disabled).toBe(true);
+    expect(screen.queryByRole("button", { name: "改期Historical pending" })).toBeNull();
+    const call = fetchMock.mock.calls.find(([url]) => url.pathname.endsWith("/reschedule"))!;
+    expect(JSON.parse(call[1].body as string)).toEqual({ date: localDate(), taskId: "task-1", targetDate });
+    expect(days.has(targetDate)).toBe(false);
+    view.unmount(); render(<TodayPage accessToken="browser-session" />);
+    await screen.findByText(new RegExp(`已改期 → ${targetDate}`));
+  });
+
+  it("keeps a failed reschedule's chosen date and retries the same command without a new Task", async () => {
+    render(<TodayPage accessToken="browser-session" />); await ready();
+    await add("Retry reschedule"); await confirmPlan();
+    const server = fetchMock.getMockImplementation()!;
+    let reject = true;
+    fetchMock.mockImplementation(async (url, options) => {
+      if (url.pathname.endsWith("/reschedule") && reject) return new Response("unavailable", { status: 503 });
+      return server(url, options);
+    });
+    fireEvent.click(await screen.findByRole("button", { name: "改期Retry reschedule" }));
+    const targetDate = shiftDate(executionDate, 3);
+    fireEvent.change(screen.getByLabelText("目标日期"), { target: { value: targetDate } });
+    fireEvent.click(screen.getByRole("button", { name: "确认改期" }));
+    await screen.findByRole("alert");
+    expect(day().items.plan[0].resultStatus).toBe("pending");
+    expect((screen.getByLabelText("目标日期") as HTMLInputElement).value).toBe(targetDate);
+    reject = false;
+    fireEvent.click(screen.getByRole("button", { name: "重试改期" }));
+    await screen.findByText(new RegExp(`已改期 → ${targetDate}`));
+    expect(created).toBe(1);
+    const requests = fetchMock.mock.calls.filter(([url]) => url.pathname.endsWith("/reschedule"));
+    expect(requests).toHaveLength(2);
+    expect(requests[0][1].body).toBe(requests[1][1].body);
+  });
+
+  it("allows cancelling date selection and hides reschedule for Draft, completed, terminal or future items", async () => {
+    render(<TodayPage accessToken="browser-session" />); await ready(); await add("Eligibility");
+    expect(screen.queryByRole("button", { name: "改期Eligibility" })).toBeNull();
+    await confirmPlan();
+    fireEvent.click(await screen.findByRole("button", { name: "改期Eligibility" }));
+    fireEvent.change(screen.getByLabelText("目标日期"), { target: { value: executionDate } });
+    expect((screen.getByRole("button", { name: "确认改期" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "取消" }));
+    expect(fetchMock.mock.calls.filter(([url]) => url.pathname.endsWith("/reschedule"))).toHaveLength(0);
+    for (const resultStatus of ["completed", "cancelled", "incomplete", "rescheduled"] as const) {
+      day().items.plan[0].resultStatus = resultStatus;
+      fireEvent.click(screen.getByRole("button", { name: "刷新" }));
+      await waitFor(() => expect(screen.queryByRole("button", { name: "改期Eligibility" })).toBeNull());
+      await waitFor(() => expect((screen.getByRole("button", { name: "刷新" }) as HTMLButtonElement).disabled).toBe(false));
+    }
+    day().items.plan[0].resultStatus = "pending";
+    executionDate = shiftDate(localDate(), -1);
+    fireEvent.click(screen.getByRole("button", { name: "刷新" }));
+    await waitFor(() => expect((screen.getByRole("button", { name: "刷新" }) as HTMLButtonElement).disabled).toBe(false));
+    expect(screen.queryByRole("button", { name: "改期Eligibility" })).toBeNull();
   });
 
   it("persists Added Later completion and keeps a failed uncomplete checked", async () => {

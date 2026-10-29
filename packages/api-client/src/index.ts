@@ -25,3 +25,5 @@ export { addLater, AddLaterApiClientError } from "./add-later";
 export type { AddLaterOptions } from "./add-later";
 export { completeTask, uncompleteTask, TaskExecutionApiClientError } from "./task-execution";
 export type { TaskExecutionOptions } from "./task-execution";
+export { rescheduleTask, TaskRescheduleApiClientError } from "./task-reschedule";
+export type { TaskRescheduleOptions } from "./task-reschedule";

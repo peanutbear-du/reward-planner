@@ -5,6 +5,7 @@ interface TaskItemProps {
   editable: boolean;
   disabled: boolean;
   executionAvailable: boolean;
+  onReschedule: () => void;
   onCompletion: (completed: boolean) => void;
   onPriority: (priority: DailyPlanItemPriority) => void;
   onRemove: () => void;
@@ -15,7 +16,9 @@ const results = {
   cancelled: "已取消", incomplete: "未完成",
 };
 
-export function TaskItem({ item, editable, disabled, executionAvailable, onCompletion, onPriority, onRemove }: TaskItemProps) {
+export function TaskItem({ item, editable, disabled, executionAvailable, onCompletion, onPriority, onRemove, onReschedule }: TaskItemProps) {
+  const resultLabel = item.resultStatus === "rescheduled" && item.rescheduledToDate
+    ? `已改期 → ${item.rescheduledToDate}` : results[item.resultStatus];
   return (
     <li className={`task-item ${item.priority === "must_do" ? "task-item-must" : ""}`}>
       <input className="task-marker" type="checkbox" aria-label={`完成任务：${item.title}`}
@@ -25,12 +28,13 @@ export function TaskItem({ item, editable, disabled, executionAvailable, onCompl
       <div className="task-copy">
         <span>{item.title}</span>
         <small>
-          {item.resultStatus !== "pending" ? `${results[item.resultStatus]} · ` : ""}
+          {item.resultStatus !== "pending" ? `${resultLabel} · ` : ""}
           {item.plannedStartTime ? `${item.plannedStartTime.slice(0, 5)}${item.plannedEndTime ? `–${item.plannedEndTime.slice(0, 5)}` : ""}` : "未安排时间"}
           {item.origin === "added_later" ? ` · ${item.priority === "must_do" ? "必须完成" : "计划"}` : ""}
-          {item.rescheduledToDate ? ` → ${item.rescheduledToDate}` : ""}
         </small>
       </div>
+      {item.canReschedule ? <button className="text-button" type="button" disabled={disabled}
+        aria-label={`改期${item.title}`} onClick={onReschedule}>改期</button> : null}
       {editable ? <div className="task-actions">
         <select aria-label={`${item.title}的优先级`} value={item.priority}
           disabled={disabled} onChange={(event) => onPriority(event.target.value as DailyPlanItemPriority)}>

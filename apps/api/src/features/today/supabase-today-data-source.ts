@@ -45,6 +45,9 @@ interface PlanningItemDatabaseRow {
 interface TaskDatabaseRow {
   id: string;
   title: string;
+  status: "open" | "completed";
+  project_id: string | null;
+  milestone_id: string | null;
 }
 
 export function createSupabaseTodayDataSource(
@@ -152,11 +155,14 @@ export function createSupabaseTodayDataSource(
 
       const { data, error } = await supabase
         .from("tasks")
-        .select("id,title")
+        .select("id,title,status,project_id,milestone_id")
         .in("id", taskIds);
 
       assertQuerySucceeded(error, "Tasks");
-      return (data ?? []) as TaskDatabaseRow[];
+      return ((data ?? []) as TaskDatabaseRow[]).map((task) => ({
+        id: task.id, title: task.title, status: task.status,
+        projectId: task.project_id, milestoneId: task.milestone_id,
+      }));
     },
   };
 }

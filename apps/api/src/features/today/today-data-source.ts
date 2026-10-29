@@ -39,6 +39,9 @@ export interface TimedPlanningItemRecord extends PlanningItemRecord {
 export interface TaskRecord {
   id: string;
   title: string;
+  status: "open" | "completed";
+  projectId: string | null;
+  milestoneId: string | null;
 }
 
 export interface TodayDataSource {

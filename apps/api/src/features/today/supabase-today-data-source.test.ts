@@ -4,6 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 import { createSupabaseTodayDataSource } from "./supabase-today-data-source";
 
 describe("Draft Today Planning Item query", () => {
+  it("reads Task eligibility fields through the same scoped client", async () => {
+    const inFilter = vi.fn(async () => ({ data: [{ id: "task", title: "Task", status: "completed", project_id: null, milestone_id: null }], error: null }));
+    const select = vi.fn(() => ({ in: inFilter })), from = vi.fn(() => ({ select }));
+    const source = createSupabaseTodayDataSource({ from } as unknown as SupabaseClient);
+    expect(await source.getTasks(["task"])).toEqual([{ id: "task", title: "Task", status: "completed", projectId: null, milestoneId: null }]);
+    expect(select).toHaveBeenCalledWith("id,title,status,project_id,milestone_id");
+    expect(inFilter).toHaveBeenCalledWith("id", ["task"]);
+  });
   it("reads persisted per-day qualification fields using the date and RLS-scoped client", async () => {
     const maybeSingle = vi.fn(async () => ({ data: {
       id: "plan", status: "committed", snapshot_created_at: "2026-10-26T00:00:00Z",

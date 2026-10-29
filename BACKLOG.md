@@ -425,7 +425,7 @@ Acceptance Criteria:
 
 ## RP-M2-04 — Reschedule history
 
-Status: TODO
+Status: DONE
 
 Acceptance Criteria:
 
