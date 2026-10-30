@@ -637,6 +637,39 @@ revalidates. The existing Added Later command DTO does not include this GET-only
 projection. Desktop refetches after success and displays the original Item as
 “已改期 → 目标日期”; completion on another date cannot rewrite that historical result.
 
+### 8.6 cancelDailyItem
+
+RP-M2-05 adds `POST /api/commands/daily-item/cancel` with strict `{ date, itemId }`
+and authenticated `cancel_daily_item(p_date date, p_item_id uuid)`. SECURITY DEFINER
+uses empty search_path and explicit auth.uid ownership checks. No client table
+write privilege or privileged frontend credential is added.
+
+Lock the owned source Plan first, resolve its owned Item without locking, lock
+the related owned Task when present, then re-read/lock the source Item and lock
+its owned Planning relation. Recheck target identity after locking. This follows
+the existing Plan→Task→Item→Planning order, with no other Plan lock acquired later.
+Milestone-targeted Item rows can use their owned Planning relation without adding
+any Milestone entity, global execution or reward command; the current Desktop
+continues to render its existing Task Item projection.
+
+All Committed dates are valid; no timezone/Today or global Task-status condition
+is applied. Pending→cancelled updates only result_status and updated_at. All
+snapshots/historical fields and global Task state are preserved. If Planning's
+live planned_date equals the source date, set only planned_date to NULL and
+updated_at to command time; keep its row, time, target_week and other metadata.
+Missing Planning needs no INSERT. Other/null dates are byte-for-byte unchanged.
+Already-cancelled retries return changed=false before any Planning write, so
+later schedules, even a new schedule on the original date, cannot be cleared.
+Completed/rescheduled/incomplete Items and Draft/missing/foreign context reject.
+
+Planning cleanup and Item update share one RPC transaction; any error rolls back
+both. Existing qualification/reward triggers remain the sole authority. Pending
+and cancelled are both incomplete members of N, so legal cancellation leaves
+counts, Must-do counts, qualification and Reward Event identity/status unchanged.
+Desktop uses the existing Committed/result fields for its cancel affordance;
+SQL revalidates. Confirmation, retry and post-success refetch use the source
+date/Item identity and never optimistically change Task execution or rewards.
+
 ---
 
 ## 9. Milestone Business Logic

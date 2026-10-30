@@ -2,6 +2,7 @@ import {
   addLater, commitDailyPlan, createTask, getToday,
   removeDraftTodayItem, upsertDraftTodayItem, completeTask, uncompleteTask, TaskExecutionApiClientError,
   rescheduleTask, TaskRescheduleApiClientError,
+  cancelDailyItem, CancelDailyItemApiClientError,
 } from "@reward-planner/api-client";
 import type { DailyPlanItemPriority } from "@reward-planner/types";
 
@@ -25,10 +26,16 @@ export function todayApi(accessToken: string) {
       (completed ? completeTask : uncompleteTask)({ ...options, input: { date, taskId } }),
     reschedule: (date: string, taskId: string, targetDate: string) =>
       rescheduleTask({ ...options, input: { date, taskId, targetDate } }),
+    cancel: (date: string, itemId: string) => cancelDailyItem({ ...options, input: { date, itemId } }),
   };
 }
 
 export function requestError(error: unknown): string {
+  if (error instanceof CancelDailyItemApiClientError) {
+    if (error.code === "DAILY_ITEM_CANCEL_NOT_ALLOWED") return "只能取消待完成的条目；此条目已完成、改期或不再允许取消，请刷新。";
+    if (error.code === "DAILY_PLAN_NOT_COMMITTED") return "只有已确认计划中的条目可以取消；草稿请使用移除。";
+    if (error.code === "INVALID_CANCEL_REQUEST") return "取消请求无效，请检查日期并刷新后重试。";
+  }
   if (error instanceof TaskRescheduleApiClientError) {
     if (error.code === "INVALID_RESCHEDULE_DATE") return "目标日期须晚于用户时区今天及原日期，请刷新后重新选择。";
     if (error.code === "RESCHEDULE_TARGET_CONFLICT") return "目标日期已有此任务条目，无法覆盖，请选择其他日期。";

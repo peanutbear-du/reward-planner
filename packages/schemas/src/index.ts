@@ -20,3 +20,4 @@ export { commitDailyPlanRequestSchema } from "./commit-daily-plan";
 export { addLaterRequestSchema } from "./add-later";
 export { taskExecutionRequestSchema } from "./task-execution";
 export { taskRescheduleRequestSchema } from "./task-reschedule";
+export { cancelDailyItemRequestSchema } from "./cancel-daily-item";

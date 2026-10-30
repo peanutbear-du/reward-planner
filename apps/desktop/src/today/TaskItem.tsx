@@ -5,6 +5,8 @@ interface TaskItemProps {
   editable: boolean;
   disabled: boolean;
   executionAvailable: boolean;
+  cancelAvailable: boolean;
+  onCancelItem: () => void;
   onReschedule: () => void;
   onCompletion: (completed: boolean) => void;
   onPriority: (priority: DailyPlanItemPriority) => void;
@@ -16,7 +18,7 @@ const results = {
   cancelled: "已取消", incomplete: "未完成",
 };
 
-export function TaskItem({ item, editable, disabled, executionAvailable, onCompletion, onPriority, onRemove, onReschedule }: TaskItemProps) {
+export function TaskItem({ item, editable, disabled, executionAvailable, cancelAvailable, onCompletion, onPriority, onRemove, onReschedule, onCancelItem }: TaskItemProps) {
   const resultLabel = item.resultStatus === "rescheduled" && item.rescheduledToDate
     ? `已改期 → ${item.rescheduledToDate}` : results[item.resultStatus];
   return (
@@ -35,6 +37,8 @@ export function TaskItem({ item, editable, disabled, executionAvailable, onCompl
       </div>
       {item.canReschedule ? <button className="text-button" type="button" disabled={disabled}
         aria-label={`改期${item.title}`} onClick={onReschedule}>改期</button> : null}
+      {cancelAvailable ? <button className="text-button" type="button" disabled={disabled}
+        aria-label={`取消条目：${item.title}`} onClick={onCancelItem}>取消</button> : null}
       {editable ? <div className="task-actions">
         <select aria-label={`${item.title}的优先级`} value={item.priority}
           disabled={disabled} onChange={(event) => onPriority(event.target.value as DailyPlanItemPriority)}>

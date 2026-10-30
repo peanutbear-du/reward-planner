@@ -12,6 +12,7 @@ import { TaskItem } from "./TaskItem";
 import { DailyStatus } from "./DailyStatus";
 import { CommitConfirmation } from "./CommitConfirmation";
 import { RescheduleDialog } from "./RescheduleDialog";
+import { CancelDailyItemConfirmation } from "./CancelDailyItemConfirmation";
 
 export function TodayPage({ accessToken }: { accessToken: string }) {
   // This cache is discarded on sign out / user change with the page instance.
@@ -35,6 +36,7 @@ function TodayContent({ accessToken, date, onDate }: {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [rescheduling, setRescheduling] = useState<TodayItem | null>(null);
+  const [cancellingItem, setCancellingItem] = useState<TodayItem | null>(null);
   const addEntry = useRef<HTMLButtonElement>(null);
   const form = useForm<{ title: string; priority: DailyPlanItemPriority }>({
     defaultValues: { title: "", priority: "plan" },
@@ -94,6 +96,7 @@ function TodayContent({ accessToken, date, onDate }: {
       {items.length ? <ul className="task-list">{items.map((item) => <TaskItem
         key={item.id} item={item} editable={!committed && isEditing} disabled={locked || !!createdTaskId}
         executionAvailable={query.data?.execution.available === true}
+        cancelAvailable={committed && item.resultStatus === "pending"}
         onCompletion={(completed) => run(async () => {
           await api.execute(date, item.taskId, completed);
           setNotice(completed ? "任务已完成。" : "已取消任务完成状态。");
@@ -101,6 +104,7 @@ function TodayContent({ accessToken, date, onDate }: {
         onPriority={(priority) => run(() => api.put(date, item.taskId, priority, false))}
         onRemove={() => run(() => api.remove(date, item.taskId))}
         onReschedule={() => { mutation.reset(); setRescheduling(item); }}
+        onCancelItem={() => { mutation.reset(); setCancellingItem(item); }}
       />)}</ul> : <p className="empty-copy">{empty}</p>}
     </section>;
   }
@@ -137,7 +141,7 @@ function TodayContent({ accessToken, date, onDate }: {
       <div className="primary-column">
         {query.isPending ? <p role="status">正在加载每日计划…</p> : null}
         {query.isError ? <p className="form-message form-message-error" role="alert">{requestError(query.error)} 请点击刷新。</p> : null}
-        {mutation.isError && !isConfirming && !rescheduling ? <p className="form-message form-message-error" role="alert">{requestError(mutation.error)}</p> : null}
+        {mutation.isError && !isConfirming && !rescheduling && !cancellingItem ? <p className="form-message form-message-error" role="alert">{requestError(mutation.error)}</p> : null}
         {notice || mutation.isPending || query.isFetching && !query.isPending ?
           <p className="operation-status" role="status">{mutation.isPending ? "正在保存…" : query.isFetching ? "正在刷新…" : notice}</p> : null}
         {query.data ? <>
@@ -194,6 +198,13 @@ function TodayContent({ accessToken, date, onDate }: {
         </section>
       </aside>
     </div>
+    {cancellingItem ? <CancelDailyItemConfirmation title={cancellingItem.title} date={date} pending={busy}
+      error={mutation.isError ? requestError(mutation.error) : null}
+      onDismiss={() => { setCancellingItem(null); mutation.reset(); }}
+      onConfirm={() => run(async () => {
+        await api.cancel(date, cancellingItem.id);
+        setCancellingItem(null); setNotice("已取消此日期的条目，历史记录已保留。");
+      })} /> : null}
     {rescheduling ? <RescheduleDialog title={rescheduling.title}
       minDate={shiftDate(query.data!.execution.currentDate, 1)} pending={busy}
       error={mutation.isError ? requestError(mutation.error) : null}

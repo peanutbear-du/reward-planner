@@ -442,12 +442,20 @@ Sep21 → Sep22 example.
 
 ## RP-M2-05 — Cancel Daily item
 
-Status: TODO
+Status: DONE
 
 Acceptance Criteria:
 
 - cancelled item remains part of original Daily truth
 - does not disappear from denominator/history silently
+- cancel owned pending Items in any date's Committed plan; Draft uses existing removal
+- preserve snapshots, origin/priority, target identity and global Task execution state
+- clear only a matching source-date Planning date, retaining its row/time/week metadata
+- cancelled retries are no-ops, including after a new schedule is created
+- reject completed/rescheduled/incomplete, missing and foreign Items atomically
+- reuse qualification/reward triggers; counts, qualification and existing Reward Events stay unchanged
+- provide minimal Desktop confirmation, pending/error/retry and refetch-persisted history
+- verify concurrent Cancel/Complete/Reschedule, rollback and test-fixture cleanup after migration Review
 
 ---
 

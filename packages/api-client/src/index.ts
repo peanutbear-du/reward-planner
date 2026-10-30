@@ -27,3 +27,5 @@ export { completeTask, uncompleteTask, TaskExecutionApiClientError } from "./tas
 export type { TaskExecutionOptions } from "./task-execution";
 export { rescheduleTask, TaskRescheduleApiClientError } from "./task-reschedule";
 export type { TaskRescheduleOptions } from "./task-reschedule";
+export { cancelDailyItem, CancelDailyItemApiClientError } from "./cancel-daily-item";
+export type { CancelDailyItemOptions } from "./cancel-daily-item";

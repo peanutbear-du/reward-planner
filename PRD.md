@@ -235,6 +235,25 @@ Sep 21 remains:
 
 Completing it Sep 22 must not rewrite Sep 21 history.
 
+### 5.10 Cancel a Daily Item
+
+Cancellation applies to one pending Item in an owned Committed Daily Plan, on
+any historical, current or future date. It is not cancellation of the global
+Task. Keep the Item as Cancelled, including its frozen title/time, origin,
+priority and identity; Task execution state and other dates remain unchanged.
+Draft continues to use removal. Completed, Rescheduled and Incomplete Items
+cannot be cancelled; repeating an already-Cancelled Item is a no-op.
+
+If the current Planning date still equals the cancelled Item's source date,
+clear only that date. Preserve the Planning row, time and week metadata. A
+different/null Planning date is unchanged; a retry never clears a later schedule.
+Cancelled Items stay in the Daily denominator and remain incomplete, including
+the existing Must-do rules. Since only pending Items can be cancelled, counts,
+qualification and the existing Daily Reward Event remain unchanged.
+
+Desktop offers a compact confirmation on Committed pending Items, then refetches
+and displays the retained Item as 已取消. Errors retain the action for safe retry.
+
 ---
 
 ## 6. Week
