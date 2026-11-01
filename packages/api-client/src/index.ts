@@ -29,3 +29,5 @@ export { rescheduleTask, TaskRescheduleApiClientError } from "./task-reschedule"
 export type { TaskRescheduleOptions } from "./task-reschedule";
 export { cancelDailyItem, CancelDailyItemApiClientError } from "./cancel-daily-item";
 export type { CancelDailyItemOptions } from "./cancel-daily-item";
+export { createWish, CreateWishApiClientError } from "./create-wish";
+export type { CreateWishOptions } from "./create-wish";

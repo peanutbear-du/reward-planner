@@ -31,3 +31,4 @@ export type { AddLaterRequest, AddLaterResponse } from "./add-later";
 export type { TaskExecutionRequest, TaskExecutionData, TaskExecutionResponse, TaskExecutionErrorCode } from "./task-execution";
 export type { TaskRescheduleRequest, TaskRescheduleData, TaskRescheduleResponse, TaskRescheduleErrorCode } from "./task-reschedule";
 export type { CancelDailyItemRequest, CancelDailyItemData, CancelDailyItemResponse, CancelDailyItemErrorCode } from "./cancel-daily-item";
+export type { CreateWishRequest, CreatedWishDto, CreateWishResponse, CreateWishErrorCode } from "./create-wish";

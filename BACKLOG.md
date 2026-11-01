@@ -498,7 +498,13 @@ Acceptance Criteria:
 
 ## RP-M3-02 — Create Wish
 
-Status: TODO
+Status: DONE
+
+Final Review PASS (2026-11-01), closure explicitly approved. Application Mock
+tests 81 PASS; Migration static Review 0 BLOCKER; RPC deployed to Dev; real API
+Smoke 1/1 PASS, 8 groups, 31.83 seconds. Two fixture accounts/nine tables cleaned;
+temporary proxy environment restored. See supabase/tests/RP-M3-02.md for accepted
+NOT TESTED: native SQL/pgTAP, direct SQL roles, injected rollback, lost-response recovery.
 
 Fields:
 
@@ -507,6 +513,16 @@ Fields:
 - optional cover
 - optional reference price
 - optional why
+
+Offline Acceptance Criteria:
+
+- strict title/positive integer target/optional reference price/Why validation
+- authenticated Bearer API, user-scoped RPC adapter and API Client with mock tests
+- create wishlist only; no start, allocation, unlock, switch or cover upload
+- repeated POSTs are independent creates; no title-based deduplication or automatic retry
+- formal RPC: 20261101000000_add_create_wish_command.sql; shared ECMAScript trim semantics
+- targeted SQL tests cover Auth/ACL, metadata, repeat creates, ownership and no allocation/start/unlock
+- Dev API/persistence/permissions/isolation and cleanup accepted; native SQL test gaps retained
 
 ---
 
