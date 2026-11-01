@@ -463,17 +463,36 @@ Acceptance Criteria:
 
 ## RP-M3-01 — Wish schema
 
-Status: TODO
+Status: DONE
+
+Final Review PASS (2026-11-01): Dev Migration deployed with matching Local/Remote
+history; static Review 0 BLOCKER; live Data API 8/8 PASS including Daily Reward
+compatibility; four independent test accounts and nine related tables cleaned.
+Accepted NOT TESTED: native SQL/pgTAP, direct SQL-role RLS checks, and two native
+database connections competing for Unlocking. See supabase/tests/RP-M3-01.md.
 
 Tables:
 
 - wishes
-- reward_events if not already
+- reward_events (reuse existing Daily-only ledger)
 - reward_allocations
 
 Constraint:
 
 - one Unlocking Wish per user
+
+Acceptance Criteria:
+
+- Wish fields follow TECH_SPEC; title is nonblank and target is a positive integer
+- multiple Wishlist rows allowed; partial uniqueness enforces one Unlocking per owner
+- reuse Daily-only reward_events; add only the composite owner key needed by allocations
+- allocations reference an owned Event and, for Wish allocations, an owned Wish
+- pending requires no Wish; Wish allocation requires a Wish; split allocations remain possible
+- nonzero signed Allocation amounts reserve future append-style corrections (user confirmed)
+- owner-scoped SELECT RLS; no direct anon/authenticated write privileges
+- no allocation/unlock/reversal engine, UI or new business Command in this ticket
+- provide focused pgTAP constraints, RLS, Daily-reward compatibility and cleanup checks
+- local static review first; await Migration Review before any remote deployment
 
 ---
 

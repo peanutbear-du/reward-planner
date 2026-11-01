@@ -408,6 +408,12 @@ Constraint:
 
 At most one Unlocking Wish per user.
 
+RP-M3-01 stores `target` as a positive integer, rejects whitespace-only titles,
+and enforces one Unlocking Wish with a partial unique index on user_id. Wishlist
+rows may retain started_at and prior allocations when a later Command switches
+the current Wish. No progress column or automatic status/timestamp transition is
+introduced here. Authenticated users have owner-scoped SELECT only.
+
 ### 6.13 reward_events
 
 Fields:
@@ -453,6 +459,26 @@ Example:
 
 - +2 Wish A
 - +6 Pending
+
+RP-M3-01 reuses the Daily-only Reward Event table and adds only its unique
+`(id, user_id)` key for Allocation ownership references. Allocations use composite
+foreign keys `(reward_event_id, user_id)` and `(wish_id, user_id)`; a Wish
+allocation requires wish_id, while Pending requires wish_id to be NULL.
+
+Confirmed schema representation: `amount` is a nonzero signed integer, reserving
+negative rows for later traceable corrections. Multiple rows per Event/target
+permit splits and later Pending-to-Wish transfers without changing the original
+Reward Event amount. This schema does not authorize negative balances or define
+which corrections count toward progress. Allocation/reversal Commands must later
+enforce totals, correction validity/idempotency and unlocked/redeemed protection;
+naively summing all rows, or discarding all reversed Events, is not a defined
+progress algorithm. No allocation, transfer, backfill or unlock trigger is added.
+
+Authenticated users have owner-scoped SELECT only on Allocations. Source/Wish
+foreign keys use NO ACTION on standalone deletion to retain traceability; the
+owner profile's deletion cascades its Wishes, Events and Allocations together.
+Future privileged Commands must validate ownership and perform transitions in a
+transaction; service-role bypasses RLS. Milestone reward sources remain disabled.
 
 ### 6.15 completion_tickets
 
