@@ -528,7 +528,7 @@ Offline Acceptance Criteria:
 
 ## RP-M3-03 — Wish cover upload
 
-Status: TODO
+Status: DONE
 
 Storage:
 
@@ -539,6 +539,18 @@ Acceptance Criteria:
 - authenticated ownership
 - reasonable file validation
 - no arbitrary file storage
+- private wish-covers bucket; exact ownerId/wishId.jpg path, no client-supplied path
+- JPEG MIME/signature and actual-byte limit 5 MiB; bounded multipart input
+- owned Wish only; non-upsert upload, no replacement or direct client Wish UPDATE
+- private short-lived signed reads; client Storage writes denied to prevent validation bypass
+- server-only narrow association RPC; explicit compensation/uncertain-cleanup audit
+- unit/SQL/opt-in live tests; await Migration Review before remote deployment/Smoke
+
+Accepted on user-reported Dev evidence, recorded 2026-11-05: migration history
+matches; Bucket/Policies/RPC/effective permissions PASS; real Storage Smoke 1/1
+PASS (~40.6 s), run `0e559d2c-2d40-457c-bced-4b530ddbfc54`; independent cleanup
+`pass=true`, `ownersChecked=2`, `tablesPerOwner=9`. Remaining NOT TESTED and
+NON-BLOCKER boundaries are retained in `supabase/tests/RP-M3-03.md`.
 
 ---
 

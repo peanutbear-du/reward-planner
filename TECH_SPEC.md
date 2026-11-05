@@ -832,6 +832,31 @@ Path example:
 
 `wish-covers/{user_id}/{wish_id}.jpg`
 
+RP-M3-03 uses a private `wish-covers` bucket, JPEG only, up to 5 MiB. The Business
+API validates Bearer identity, bounded multipart bytes, MIME and JPEG signature,
+then resolves the Wish using the user-scoped client. It derives the canonical
+object name; client filenames/paths cannot control storage. No replacement is
+provided (upsert=false and cover_path must be NULL).
+
+To prevent bypassing byte validation, ordinary Storage writes and direct cover
+association are denied. Authenticated reads require an owned Wish with exactly
+that associated canonical name; restrictive bucket guards also apply if other
+permissive policies exist. A lazily constructed server-only service-role Storage
+client uploads/removes objects, then calls the service-only attach_wish_cover
+RPC, which checks Wish+owner, object metadata and existing cover under a row lock.
+Service-role bypasses RLS: safety depends on this authenticated ownership gateway,
+fixed paths and server-only credentials, not client policies protecting that key.
+No Wish table UPDATE permission is granted to clients.
+
+Upload/association are not a distributed transaction. Only a confirmed newly
+uploaded object can be compensated after a definite association rejection and
+readback showing it is unreferenced. Unknown upload/commit/delete outcomes are
+reported as cleanup unconfirmed and audited by Wish ID/path/stage; no unsafe
+automatic deletion/retry occurs. A committed path observed after a lost response
+is returned as success. Crash/orphan cleanup remains an operational follow-up.
+Private display uses the user's client to issue a 300-second signed URL; the DB
+stores only the canonical object name, never the URL or bytes. No Wish Board UI.
+
 Client may compress/crop image before upload.
 
 Target long edge:

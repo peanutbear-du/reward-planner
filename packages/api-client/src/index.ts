@@ -31,3 +31,4 @@ export { cancelDailyItem, CancelDailyItemApiClientError } from "./cancel-daily-i
 export type { CancelDailyItemOptions } from "./cancel-daily-item";
 export { createWish, CreateWishApiClientError } from "./create-wish";
 export type { CreateWishOptions } from "./create-wish";
+export { uploadWishCover, getWishCoverUrl, WishCoverApiClientError } from "./wish-cover";
