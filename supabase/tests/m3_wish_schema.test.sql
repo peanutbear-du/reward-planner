@@ -54,7 +54,11 @@ create temp table original_events as select id, user_id, to_jsonb(e) body from p
  where user_id in ('00000000-0000-4000-8000-000000000801', '00000000-0000-4000-8000-000000000802');
 select is((select count(*)::integer from original_events), 2, 'Daily commands create one +1 per qualified owner');
 select is((select count(*)::integer from public.reward_allocations where user_id in
- ('00000000-0000-4000-8000-000000000801','00000000-0000-4000-8000-000000000802')), 0, 'schema does not automatically allocate fixture Daily rewards');
+ ('00000000-0000-4000-8000-000000000801','00000000-0000-4000-8000-000000000802')), 2, 'M3-04 Daily kernel creates one Pending credit per fixture owner');
+-- Reconstruct the old signed representation for constraint/adoption checks.
+-- Only these fresh transaction fixtures; never remove real allocation history.
+delete from public.reward_allocations where user_id in ('00000000-0000-4000-8000-000000000801','00000000-0000-4000-8000-000000000802');
+delete from public.wish_reward_state where user_id in ('00000000-0000-4000-8000-000000000801','00000000-0000-4000-8000-000000000802');
 
 insert into public.wishes (id, user_id, title, target) values
  ('70000000-0000-4000-8000-000000000801', '00000000-0000-4000-8000-000000000801', 'A Wishlist one', 60),
@@ -182,7 +186,7 @@ select throws_ok($$delete from public.reward_allocations$$,'42501',null,'client 
 select public.set_task_completion((clock_timestamp() at time zone 'UTC')::date,'10000000-0000-4000-8000-000000000801',false);
 select ok((select status='reversed' and amount=1 and reversed_at is not null from public.reward_events), 'Daily reversal works with referencing allocations');
 select ok(not exists(select 1 from public.reward_allocations a join frozen_allocations f using(id) where to_jsonb(a)<>f.body),
- 'no premature allocation/reversal trigger mutates allocation history');
+ 'terminal contributions retain their original signed history on reversal');
 select ok(not exists(select 1 from public.wishes w join frozen_wishes f using(id) where to_jsonb(w)<>f.body),
  'Daily reversal does not relock or rewrite stored Wishes');
 select public.set_task_completion((clock_timestamp() at time zone 'UTC')::date,'10000000-0000-4000-8000-000000000801',true);

@@ -33,3 +33,4 @@ export type { TaskRescheduleRequest, TaskRescheduleData, TaskRescheduleResponse,
 export type { CancelDailyItemRequest, CancelDailyItemData, CancelDailyItemResponse, CancelDailyItemErrorCode } from "./cancel-daily-item";
 export type { CreateWishRequest, CreatedWishDto, CreateWishResponse, CreateWishErrorCode } from "./create-wish";
 export type { WishCoverRequest, UploadWishCoverResponse, WishCoverUrlResponse, WishCoverErrorCode, WishCoverCleanup } from "./wish-cover";
+export type { StartWishRequest, StartWishResponse, StartWishEffect, StartWishErrorCode, WishLifecycleDto, WishLifecycleStatus } from "./start-wish";

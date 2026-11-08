@@ -81,7 +81,10 @@ describe.skipIf(!process.env.CREATE_WISH_SMOKE_API_BASE_URL)("RP-M3-02 real API 
       await seed(a, "daily_plan_items", [{ user_id: a.id, daily_plan_id: plan, task_id: task, title_snapshot: "Frozen existing" }]);
       await json(db, "/rest/v1/rpc/set_task_completion", { method: "POST", headers: auth(a), body: JSON.stringify({ p_date: today, p_task_id: task, p_completed: true }) });
       const event = (await rows(a, "reward_events"))[0]; expect(event).toMatchObject({ amount: 1, status: "active" });
-      await seed(a, "reward_allocations", [{ user_id: a.id, reward_event_id: event.id, allocation_type: "pending", wish_id: null, amount: 1 }]);
+      // M3-04 now allocates the real Daily source. Do not double-seed its credit.
+      const allocations = await rows(a, "reward_allocations");
+      if (allocations.length === 0) await seed(a, "reward_allocations", [{ user_id: a.id, reward_event_id: event.id, allocation_type: "pending", wish_id: null, amount: 1 }]);
+      else expect(allocations.filter(r => r.reward_event_id === event.id && r.allocation_type === "pending").reduce((n, r) => n + Number(r.amount), 0)).toBe(1);
       await seed(a, "wishes", [{ id: current, user_id: a.id, title: "Existing current", target: 60, status: "unlocking", started_at: new Date().toISOString() }]);
       const before: Record<string, Row[]> = {};
       for (const table of ["tasks", "daily_plans", "daily_plan_items", "reward_events", "reward_allocations"]) before[table] = await rows(a, table);

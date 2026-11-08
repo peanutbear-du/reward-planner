@@ -556,7 +556,7 @@ NON-BLOCKER boundaries are retained in `supabase/tests/RP-M3-03.md`.
 
 ## RP-M3-04 — Start / switch Wish
 
-Status: TODO
+Status: DONE
 
 Acceptance Criteria:
 
@@ -564,11 +564,39 @@ Acceptance Criteria:
 - previous progress preserved
 - starting/resuming Wish auto-applies Pending Progress
 
+Approved implementation boundary:
+
+- authenticated Start/Switch RPC/API, independent lifecycle DTO/schema/client; no UI
+- first started_at retained; current-target no-op; terminal retries conflict
+- lazy historical Active gaps become Pending; invalid history aborts atomically
+- Daily-only grant/reverse/reactivate kernel brought forward from M3-05/06/07
+- corrected signed per-source accounting, FIFO Pending transfer, immediate unlock/overflow
+- paused Wish reversal; terminal contribution retention without reissuing spent credit
+- profile NO KEY UPDATE user mutex before Event writes; deterministic downstream locks
+- source processing marker / allocation entry uniqueness; no requestId/command receipts
+- focused Mock, isolated SQL/rollback, two-connection plan and opt-in real Smoke
+
+Dev acceptance passed for migration `20261106000000`, all seven read-only
+catalog checks, and Start/Switch Smoke run
+`eb6be078-55f7-43f6-93c8-d7ca496e4090` (1/1, 37.45 s). Independent cleanup
+confirmed both test accounts, their Storage prefixes and all ten user tables
+were clear. The catalog confirmed the single Unlocking constraint. The Smoke
+verified progress preservation across switches and automatic Pending application.
+Isolated SQL, two-connection concurrency, the cover race, injected rollback, and
+transport loss after commit remain NOT TESTED under the agreed Dev acceptance
+scope. See `supabase/tests/RP-M3-04.md`.
+
 ---
 
 ## RP-M3-05 — Reward allocation engine
 
 Status: TODO
+
+M3-04 brought forward the Daily-only allocation kernel. Dev verified direct
+allocation to the current Wish, Pending with no current Wish, and overflow
+retained and applied to the next started Wish using real Daily +1 sources.
+Remaining acceptance includes broader source integration and the `58/60 +8`
+case with an owned Milestone source.
 
 Cases:
 
@@ -587,6 +615,12 @@ Required test:
 
 Status: TODO
 
+M3-04 brought forward automatic unlock for the Daily/Pending path. Dev verified
+unlock at target, clearing the current Wish, terminal retry protection and
+retaining Unlocked status through Daily reversal. Remaining acceptance includes
+broader unlock query and effect integration, routing new rewards after unlock,
+and subsequent source coverage.
+
 Acceptance Criteria:
 
 - automatic at target
@@ -599,6 +633,13 @@ Acceptance Criteria:
 ## RP-M3-07 — Reward reversal
 
 Status: TODO
+
+M3-04 brought forward minimum Daily reversal and reactivation. Dev verified
+subtracting paused Wish progress, preserving source identity, reactivation to
+the current Wish, and retaining Unlocked contributions without reissuing spent
+credit. Remaining acceptance includes a dedicated active Wish decrease case,
+Redeemed retention, broader correction queries and traceable effects, and
+subsequent source reversal coverage.
 
 Acceptance Criteria:
 
