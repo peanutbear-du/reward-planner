@@ -592,22 +592,28 @@ scope. See `supabase/tests/RP-M3-04.md`.
 
 Status: TODO
 
-M3-04 brought forward the Daily-only allocation kernel. Dev verified direct
-allocation to the current Wish, Pending with no current Wish, and overflow
-retained and applied to the next started Wish using real Daily +1 sources.
-Remaining acceptance includes broader source integration and the `58/60 +8`
-case with an owned Milestone source.
+The Daily allocation kernel shipped in M3-04. Reuse the Dev Smoke evidence in
+`supabase/tests/RP-M3-04.md`, run `eb6be078-55f7-43f6-93c8-d7ca496e4090`.
 
-Cases:
+| Case | Verified scope |
+| --- | --- |
+| Current Unlocking Wish | **PASS**. A genuine Daily +1 increased the current Wish's progress. Its progress was visible after switching. |
+| No current Wish | **PASS**. Two genuine Daily +1 sources accrued while no Wish was Unlocking. The next Start applied one and reported one still Pending. |
+| Pending application and carryover | **PASS**. The first Start unlocked a target-1 Wish and left one Pending. The next Start applied that remaining point and reported zero Pending. |
+| Split of a single +8 Event | **NOT TESTED**. The Smoke verified carryover across two +1 Events. The required split is from one owned Milestone Event. |
 
-- active Wish
-- no active Wish
-- overflow
-- Pending
+Remaining integration and acceptance depend on the owned Milestone source from
+RP-M4-01 and the completion command in RP-M4-06. The current `reward_events`
+schema accepts only `DAILY_QUALIFIED` with `amount = 1` and an owned Daily Plan
+foreign key. The Milestone source needs its own ownership validation and unique
+reward identity.
 
-Required test:
-
-58/60 +8 → +2 Wish, +6 Pending.
+Once the source is available, complete an owned +8 Milestone with the current
+Wish at 58/60. Verify one source Event still has amount +8, its signed
+allocations net to +2 for that Wish and +6 Pending, the Wish becomes Unlocked,
+and repeating completion creates no additional Event or allocation. Also verify
+that an owned Milestone reward goes entirely to Pending with no current Wish.
+These checks close the cross-source acceptance boundary for M3-05.
 
 ---
 
