@@ -621,11 +621,20 @@ These checks close the cross-source acceptance boundary for M3-05.
 
 Status: TODO
 
-M3-04 brought forward automatic unlock for the Daily/Pending path. Dev verified
-unlock at target, clearing the current Wish, terminal retry protection and
-retaining Unlocked status through Daily reversal. Remaining acceptance includes
-broader unlock query and effect integration, routing new rewards after unlock,
-and subsequent source coverage.
+Reuse M3-04 Dev Smoke `eb6be078-55f7-43f6-93c8-d7ca496e4090` for the
+Daily/Pending path. See `supabase/tests/RP-M3-04.md`.
+
+| Case | Evidence |
+| --- | --- |
+| Automatically unlock at target and persist Unlocked status | **PASS**. The exact Daily credit unlocked the target Wish and the Smoke read back the stored status. Start with enough Pending also returned Unlocked and cleared the current Wish. |
+| New Daily reward after unlock | **NOT TESTED at runtime**. The Daily allocator selects only an Unlocking Wish. The new case in `supabase/tests/m3_start_switch_wish.test.sql` checks that a fresh Daily +1 after unlock goes entirely to Pending and leaves the terminal Wish unchanged. It requires a disposable PostgreSQL database. |
+| Preserve Unlocked after Daily reversal | **PASS**. Reversing and reactivating the qualifying source preserved Unlocked status, and retrying Start left the ledger intact. |
+
+Start/Switch already returns the persisted status and `wish_unlocked` effect
+when the command unlocks its target. Broader unlock query and effect integration
+remains open, including the Wish outcome on the Milestone completion path.
+Milestone-triggered unlock and routing after unlock require the owned Milestone
+reward source and completion command from RP-M4-01 and RP-M4-06.
 
 Acceptance Criteria:
 

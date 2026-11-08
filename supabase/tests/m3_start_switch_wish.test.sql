@@ -134,6 +134,22 @@ select pg_temp.reverse_event((select id from sources where label='first'),false)
 select ok((select status='redeemed' from public.wishes where id='70000000-0000-4000-8000-000000000b07'),'Redeemed fixture never relocks');
 select ok(pg_temp.balanced('00000000-0000-4000-8000-000000000b01'),'protected reversed source conserved');
 
+-- RP-M3-06: a new Daily source after unlock belongs to Pending.
+select set_config('request.jwt.claim.sub','',true);
+create temp table unlocked_before_new_daily as
+ select public.wish_lifecycle_json(
+  '00000000-0000-4000-8000-000000000b01','70000000-0000-4000-8000-000000000b03') as body;
+insert into sources values('post-unlock',pg_temp.daily('00000000-0000-4000-8000-000000000b01','2026-01-05'));
+select is((select coalesce(sum(amount),0) from public.reward_allocations
+ where reward_event_id=(select id from sources where label='post-unlock') and allocation_type='pending'),
+ 1::bigint,'new Daily reward after unlock goes entirely to Pending');
+select is((select count(*)::int from public.reward_allocations
+ where reward_event_id=(select id from sources where label='post-unlock') and wish_id is not null),
+ 0,'new Daily reward has no Wish allocation after unlock');
+select is(public.wish_lifecycle_json(
+ '00000000-0000-4000-8000-000000000b01','70000000-0000-4000-8000-000000000b03'),
+ (select body from unlocked_before_new_daily),'new Daily reward leaves the Unlocked Wish unchanged');
+
 -- Simulate pre-M3-04 history only for the fresh second owner.
 select set_config('request.jwt.claim.sub','',true);
 insert into sources values('legacy',pg_temp.daily('00000000-0000-4000-8000-000000000b02','2026-01-01'));
