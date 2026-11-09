@@ -27,7 +27,8 @@ insert into public.daily_plans(id,user_id,plan_date,status,snapshot_created_at) 
 insert into public.daily_plan_items(user_id,daily_plan_id,task_id,title_snapshot,result_status,completed_at_on_day) values
  ('00000000-0000-4000-8000-000000000901','50000000-0000-4000-8000-000000000901','10000000-0000-4000-8000-000000000901','Frozen','completed',now());
 insert into public.reward_allocations(user_id,reward_event_id,amount,allocation_type)
-select user_id,id,1,'pending' from public.reward_events where user_id='00000000-0000-4000-8000-000000000901';
+select e.user_id,e.id,1,'pending' from public.reward_events e where e.user_id='00000000-0000-4000-8000-000000000901'
+ and not exists(select 1 from public.reward_allocations a where a.reward_event_id=e.id and a.user_id=e.user_id);
 insert into public.wishes(id,user_id,title,target,status,started_at) values
  ('70000000-0000-4000-8000-000000000901','00000000-0000-4000-8000-000000000901','Existing current',60,'unlocking',now());
 create temp table frozen_rows as

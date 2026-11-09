@@ -556,7 +556,7 @@ NON-BLOCKER boundaries are retained in `supabase/tests/RP-M3-03.md`.
 
 ## RP-M3-04 — Start / switch Wish
 
-Status: TODO
+Status: DONE
 
 Acceptance Criteria:
 
@@ -564,28 +564,77 @@ Acceptance Criteria:
 - previous progress preserved
 - starting/resuming Wish auto-applies Pending Progress
 
+Approved implementation boundary:
+
+- authenticated Start/Switch RPC/API, independent lifecycle DTO/schema/client; no UI
+- first started_at retained; current-target no-op; terminal retries conflict
+- lazy historical Active gaps become Pending; invalid history aborts atomically
+- Daily-only grant/reverse/reactivate kernel brought forward from M3-05/06/07
+- corrected signed per-source accounting, FIFO Pending transfer, immediate unlock/overflow
+- paused Wish reversal; terminal contribution retention without reissuing spent credit
+- profile NO KEY UPDATE user mutex before Event writes; deterministic downstream locks
+- source processing marker / allocation entry uniqueness; no requestId/command receipts
+- focused Mock, isolated SQL/rollback, two-connection plan and opt-in real Smoke
+
+Dev acceptance passed for migration `20261106000000`, all seven read-only
+catalog checks, and Start/Switch Smoke run
+`eb6be078-55f7-43f6-93c8-d7ca496e4090` (1/1, 37.45 s). Independent cleanup
+confirmed both test accounts, their Storage prefixes and all ten user tables
+were clear. The catalog confirmed the single Unlocking constraint. The Smoke
+verified progress preservation across switches and automatic Pending application.
+Isolated SQL, two-connection concurrency, the cover race, injected rollback, and
+transport loss after commit remain NOT TESTED under the agreed Dev acceptance
+scope. See `supabase/tests/RP-M3-04.md`.
+
 ---
 
 ## RP-M3-05 — Reward allocation engine
 
 Status: TODO
 
-Cases:
+The Daily allocation kernel shipped in M3-04. Reuse the Dev Smoke evidence in
+`supabase/tests/RP-M3-04.md`, run `eb6be078-55f7-43f6-93c8-d7ca496e4090`.
 
-- active Wish
-- no active Wish
-- overflow
-- Pending
+| Case | Verified scope |
+| --- | --- |
+| Current Unlocking Wish | **PASS**. A genuine Daily +1 increased the current Wish's progress. Its progress was visible after switching. |
+| No current Wish | **PASS**. Two genuine Daily +1 sources accrued while no Wish was Unlocking. The next Start applied one and reported one still Pending. |
+| Pending application and carryover | **PASS**. The first Start unlocked a target-1 Wish and left one Pending. The next Start applied that remaining point and reported zero Pending. |
+| Split of a single +8 Event | **NOT TESTED**. The Smoke verified carryover across two +1 Events. The required split is from one owned Milestone Event. |
 
-Required test:
+Remaining integration and acceptance depend on the owned Milestone source from
+RP-M4-01 and the completion command in RP-M4-06. The current `reward_events`
+schema accepts only `DAILY_QUALIFIED` with `amount = 1` and an owned Daily Plan
+foreign key. The Milestone source needs its own ownership validation and unique
+reward identity.
 
-58/60 +8 → +2 Wish, +6 Pending.
+Once the source is available, complete an owned +8 Milestone with the current
+Wish at 58/60. Verify one source Event still has amount +8, its signed
+allocations net to +2 for that Wish and +6 Pending, the Wish becomes Unlocked,
+and repeating completion creates no additional Event or allocation. Also verify
+that an owned Milestone reward goes entirely to Pending with no current Wish.
+These checks close the cross-source acceptance boundary for M3-05.
 
 ---
 
 ## RP-M3-06 — Wish unlock
 
 Status: TODO
+
+Reuse M3-04 Dev Smoke `eb6be078-55f7-43f6-93c8-d7ca496e4090` for the
+Daily/Pending path. See `supabase/tests/RP-M3-04.md`.
+
+| Case | Evidence |
+| --- | --- |
+| Automatically unlock at target and persist Unlocked status | **PASS**. The exact Daily credit unlocked the target Wish and the Smoke read back the stored status. Start with enough Pending also returned Unlocked and cleared the current Wish. |
+| New Daily reward after unlock | **NOT TESTED at runtime**. The Daily allocator selects only an Unlocking Wish. The new case in `supabase/tests/m3_start_switch_wish.test.sql` checks that a fresh Daily +1 after unlock goes entirely to Pending and leaves the terminal Wish unchanged. It requires a disposable PostgreSQL database. |
+| Preserve Unlocked after Daily reversal | **PASS**. Reversing and reactivating the qualifying source preserved Unlocked status, and retrying Start left the ledger intact. |
+
+Start/Switch already returns the persisted status and `wish_unlocked` effect
+when the command unlocks its target. Broader unlock query and effect integration
+remains open, including the Wish outcome on the Milestone completion path.
+Milestone-triggered unlock and routing after unlock require the owned Milestone
+reward source and completion command from RP-M4-01 and RP-M4-06.
 
 Acceptance Criteria:
 
@@ -599,6 +648,13 @@ Acceptance Criteria:
 ## RP-M3-07 — Reward reversal
 
 Status: TODO
+
+M3-04 brought forward minimum Daily reversal and reactivation. Dev verified
+subtracting paused Wish progress, preserving source identity, reactivation to
+the current Wish, and retaining Unlocked contributions without reissuing spent
+credit. Remaining acceptance includes a dedicated active Wish decrease case,
+Redeemed retention, broader correction queries and traceable effects, and
+subsequent source reversal coverage.
 
 Acceptance Criteria:
 

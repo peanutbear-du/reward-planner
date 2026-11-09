@@ -750,6 +750,76 @@ If Pending is enough to unlock the Wish:
 
 No separate wallet UI.
 
+### 10.4 RP-M3-04 Daily kernel / Start and Switch
+
+The approved M3-04 boundary brings forward the Daily-only allocation, immediate
+unlock and minimum reversal kernel needed to make automatic Pending consumption
+real. M3-05/06/07 remain TODO for their remaining work; Milestone sources, Redeem,
+Completion Tickets and Wish Board UI are not introduced.
+
+`POST /api/commands/wish/start` and `/switch` accept only `{wishId}`. The verified
+user JWT calls authenticated start_wish/switch_wish RPCs with auth.uid ownership,
+SECURITY DEFINER and empty search_path. Create Wish's Wishlist-only DTO stays
+unchanged. The separate lifecycle DTO returns persisted status/progress/times,
+previousWish, currentWishId, changed, pendingApplied and pendingRemaining, plus
+the transaction's actual effects. pendingRemaining is an unsigned decimal string
+to preserve owner-wide totals beyond JavaScript safe integers; per-Wish amounts
+remain bounded by the existing integer target.
+
+Start requires no current Wish. Switch requires a current Wish. A current-target
+request is a true no-op, with no initialization, consumption or time changes.
+Other-current Start returns WISH_ALREADY_UNLOCKING; no-current Switch returns
+WISH_NOT_UNLOCKING. Missing/foreign targets both return WISH_NOT_FOUND. Terminal
+targets return WISH_START_NOT_ALLOWED, including a retry after immediate unlock.
+Switch returns the old Wish to Wishlist without transferring its progress or
+clearing first started_at. Starting/resuming sets started_at only if NULL.
+
+Historical Active gaps are lazily credited to Pending inside an owner command,
+then applied to that command's selected Wish. No migration-wide history backfill
+occurs. Reversed sources add no spendable credit. Invalid source/target negative
+net, source over-allocation or Wish over-target history aborts the whole command;
+processed-source deficits also abort. A current-target no-op rejects stale
+unreconciled reversal history rather than mutating it or reporting stale progress.
+
+After initialization, Active source net equals original Event.amount. Reversed
+source Pending and every nonterminal Wish contribution net are zero; terminal
+Unlocked/Redeemed contributions remain and still occupy original source capacity.
+Reactivation restores only amount minus retained contributions, routing to the
+then-current Wish or Pending. No cross-source debt or negative Pending is created.
+All corrections append signed rows; original Event ID/amount/created_at stay
+unchanged. Wish progress is the corrected signed contribution sum, including
+retained terminal contributions, not a naive filter removing all reversed Events.
+
+Pending moves as same-source -x Pending / +x Wish pairs, in Event created_at/id
+order, up to the target. Reaching target sets Unlocked in the same transaction;
+overflow stays Pending, currentWishId becomes NULL, and no other Wish auto-starts.
+New Daily grants use this same kernel; reversing subtracts contributions from
+all nonterminal Wishes, including paused Wishlist, without relocking terminals.
+
+One internal wish_reward_state row per owned Event records initialized,
+last_status and revision. Its PK prevents duplicate initialization; status/revision
+separates grant/reverse/reactivate cycles. Allocation source_revision/entry_key
+uniqueness prevents repeating the same source-cycle credit, per-target correction
+or transfer leg. Legacy metadata stays NULL; rows are never silently deleted or
+normalized. This is source processing metadata, not a wallet or command receipt.
+Clients cannot read/write the marker table or execute internal helpers.
+
+All relevant writers use the existing profile row FOR NO KEY UPDATE mutex before
+Event writes, including the replacement Daily sync function. Runtime lock suffix:
+profile -> Events by id -> processing state by Event id -> Wishes by id ->
+Allocations by id. Existing Daily Plan/Task/Item locks precede that suffix; Wish
+commands never reacquire them. The migration briefly drains Daily writers under
+a bounded daily_plans DDL lock while replacing the function; it backfills no rows.
+Cover association retains Wish -> Storage order and never requests the profile
+mutex or Event locks. Lifecycle updates change only their own fields, preserving
+concurrent cover_path changes. All states, times, allocation pairs and markers
+rollback together on failure. Existing Daily qualification/API responses stay
+unchanged; reward-related UI/effect projections remain later work.
+
+Only state idempotency is offered: no requestId, durable command receipt or
+automatic retry. Unknown transport outcome requires state reconciliation; an old
+request replayed after intervening switches is a new state-dependent action.
+
 ---
 
 ## 11. Transactions and Atomicity
