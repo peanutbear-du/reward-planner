@@ -34,3 +34,4 @@ export type { CancelDailyItemRequest, CancelDailyItemData, CancelDailyItemRespon
 export type { CreateWishRequest, CreatedWishDto, CreateWishResponse, CreateWishErrorCode } from "./create-wish";
 export type { WishCoverRequest, UploadWishCoverResponse, WishCoverUrlResponse, WishCoverErrorCode, WishCoverCleanup } from "./wish-cover";
 export type { StartWishRequest, StartWishResponse, StartWishEffect, StartWishErrorCode, WishLifecycleDto, WishLifecycleStatus } from "./start-wish";
+export type { WishBoardResponse, WishBoardWish } from "./wish-board";
