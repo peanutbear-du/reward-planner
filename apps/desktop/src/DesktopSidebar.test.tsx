@@ -5,6 +5,12 @@ import { DesktopSidebar } from "./DesktopSidebar";
 
 afterEach(cleanup);
 describe("compact Desktop Sidebar", () => {
+  it("marks Wish Board as current and keeps Today reachable", () => {
+    render(<DesktopSidebar page="wish-board" isSigningOut={false} signOutError={null} onSignOut={vi.fn()} />);
+    expect(screen.getByRole("link", { name: "愿望板", current: "page" }).getAttribute("href")).toBe("#wish-board");
+    expect(screen.getByRole("link", { name: "计划" }).getAttribute("href")).toBe("#today");
+  });
+
   it("keeps account controls collapsed and preserves the real sign-out action", () => {
     const onSignOut = vi.fn();
     render(<DesktopSidebar email="fixture@example.test" isSigningOut={false} signOutError={null} onSignOut={onSignOut} />);

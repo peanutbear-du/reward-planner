@@ -34,3 +34,4 @@ export type { CreateWishOptions } from "./create-wish";
 export { uploadWishCover, getWishCoverUrl, WishCoverApiClientError } from "./wish-cover";
 export { startWish, switchWish, StartWishApiClientError } from "./start-wish";
 export type { StartWishOptions } from "./start-wish";
+export { getWishBoard } from "./wish-board";

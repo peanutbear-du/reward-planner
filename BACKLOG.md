@@ -666,7 +666,7 @@ Acceptance Criteria:
 
 ## RP-M3-08 — Wish Board UI
 
-Status: TODO
+Status: DONE
 
 Includes:
 
@@ -677,6 +677,28 @@ Includes:
 - recent reward entries
 
 Follow DESIGN_SPEC.
+
+The first Daily slice uses Figma Wish Board / Desktop / v0.1 (55:2). The
+Desktop navigation opens the authenticated Board. The API reads owner-scoped
+Wishes and signed allocation totals, and returns recent active Daily grants.
+Create, Start and Switch reuse the existing commands and refresh the Board
+from the server.
+
+The Daily Create → Start → Today qualification → Daily +1 → reload → Switch
+flow passed in Dev under run `51678e96-6dac-4a4b-a7e3-8b3bd6f272c1`. See
+[RP-M3-08 acceptance](supabase/tests/RP-M3-08.md) for the ledger and independent
+cleanup evidence, local checks, and the Next.js startup limitation.
+Complete correction history depends on RP-M3-07, and Milestone rewards follow M4.
+
+---
+
+## RP-UI-03 — Update Today Daily reward copy
+
+Status: TODO
+
+Today still shows “每日奖励尚未接入” after a Daily +1 has been issued.
+Update the copy to reflect the existing Daily reward flow without changing
+qualification or reward rules.
 
 ---
 
