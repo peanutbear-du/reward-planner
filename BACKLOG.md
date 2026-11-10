@@ -649,12 +649,26 @@ Acceptance Criteria:
 
 Status: TODO
 
-M3-04 brought forward minimum Daily reversal and reactivation. Dev verified
-subtracting paused Wish progress, preserving source identity, reactivation to
-the current Wish, and retaining Unlocked contributions without reissuing spent
-credit. Remaining acceptance includes a dedicated active Wish decrease case,
-Redeemed retention, broader correction queries and traceable effects, and
-subsequent source reversal coverage.
+Reuse the M3-04 Dev Smoke and signed ledger in [RP-M3-04](supabase/tests/RP-M3-04.md),
+run `eb6be078-55f7-43f6-93c8-d7ca496e4090`. See the
+[RP-M3-07 verification record](supabase/tests/RP-M3-07.md) for the local review
+and scoped Dev acceptance steps.
+
+| Case | Evidence |
+| --- | --- |
+| Daily reversal and reactivation | **PASS in Dev**, run `826124d3-8083-4dbb-b6e1-50bf6a6319f1`. The current Unlocking Wish went from 1 to 0 and back to 1 on the original Event. |
+| Terminal protection | **PASS in Dev**. M3-04 covered Unlocked retention and M3-07 verified Redeemed at 1/1 with unchanged timestamps and no new allocations. |
+| Traceable corrections and repeat operations | **PASS in Dev** for one correction per transition, unchanged Event, allocation and history rows on retries, owner isolation, and independent cleanup. The isolated pgTAP suite remains **NOT TESTED**. |
+
+The Daily Wish Board reads persisted Wish progress and active Daily grants.
+Complete correction history needs the new owner-scoped correction records
+for status changes and the signed allocation rows for progress deltas.
+Displaying that history is a follow-up after migration acceptance.
+
+Milestone correction is **NOT TESTED** and depends on RP-M4-01 for owned
+sources, RP-M4-06 for completion and reactivation, and RP-M4-07 for reversal.
+Verify one source identity, signed debits against unprotected progress,
+terminal retention, restored credit without duplication, and owner isolation.
 
 Acceptance Criteria:
 
