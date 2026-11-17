@@ -28,6 +28,11 @@ select throws_ok(
 insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-000000000081', 'm1-later-a@example.test'),
   ('00000000-0000-4000-8000-000000000082', 'm1-later-b@example.test');
+insert into public.projects (id, user_id, title, scale) values
+  ('20000000-0000-4000-8000-000000000086', '00000000-0000-4000-8000-000000000081', 'Fixture Project', 'small');
+insert into public.milestones (id, user_id, project_id, title, reward_value) values
+  ('30000000-0000-4000-8000-000000000087', '00000000-0000-4000-8000-000000000081', '20000000-0000-4000-8000-000000000086', 'Fixture Milestone', 4);
+
 insert into public.tasks (id, user_id, title, status, completed_at, project_id, milestone_id) values
   ('10000000-0000-4000-8000-000000000081', '00000000-0000-4000-8000-000000000081', 'Initial Task', 'open', null, null, null),
   ('10000000-0000-4000-8000-000000000082', '00000000-0000-4000-8000-000000000081', 'Current Later title', 'open', null, null, null),

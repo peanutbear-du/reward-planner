@@ -117,6 +117,11 @@ values
   ('00000000-0000-4000-8000-000000000021', 'm1-edit-task-a@example.test'),
   ('00000000-0000-4000-8000-000000000022', 'm1-edit-task-b@example.test');
 
+insert into public.projects (id, user_id, title, scale) values
+  ('20000000-0000-4000-8000-000000000025', '00000000-0000-4000-8000-000000000021', 'Fixture Project', 'small');
+insert into public.milestones (id, user_id, project_id, title, reward_value) values
+  ('30000000-0000-4000-8000-000000000026', '00000000-0000-4000-8000-000000000021', '20000000-0000-4000-8000-000000000025', 'Fixture Milestone', 4);
+
 insert into public.tasks (
   id,
   user_id,

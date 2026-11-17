@@ -33,6 +33,11 @@ select ok(
 insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-000000000031', 'm1-draft-a@example.test'),
   ('00000000-0000-4000-8000-000000000032', 'm1-draft-b@example.test');
+insert into public.projects (id, user_id, title, scale) values
+  ('20000000-0000-4000-8000-000000000034', '00000000-0000-4000-8000-000000000031', 'Fixture Project', 'small');
+insert into public.milestones (id, user_id, project_id, title, reward_value) values
+  ('30000000-0000-4000-8000-000000000035', '00000000-0000-4000-8000-000000000031', '20000000-0000-4000-8000-000000000034', 'Fixture Milestone', 4);
+
 insert into public.tasks (id, user_id, title, status, completed_at, project_id, milestone_id) values
   ('10000000-0000-4000-8000-000000000031', '00000000-0000-4000-8000-000000000031', 'Existing Task', 'open', null, null, null),
   ('10000000-0000-4000-8000-000000000032', '00000000-0000-4000-8000-000000000032', 'Other user Task', 'open', null, null, null),
