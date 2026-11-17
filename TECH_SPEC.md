@@ -234,7 +234,9 @@ affect existing Projects.
 The Project creation command (RP-M4-02) requires a nonempty initial Milestone
 list. The server derives ownership from the authenticated user and writes the
 Project and all initial Milestones in one transaction. Use the inserted
-Project's stored `reward_pool` for the initial allocation.
+Project's stored `reward_pool` for the initial allocation. Every initial
+Milestone receives integer division of the pool by the list length, with the
+entire remainder added to the final Milestone in request order.
 
 ### 6.4 milestones
 
@@ -999,6 +1001,7 @@ Use:
 - `POST /commands/task/complete`
 - `POST /commands/task/uncomplete`
 - `POST /commands/task/reschedule`
+- `POST /api/commands/project/create`
 - `POST /commands/milestone/complete`
 - `POST /commands/milestone/reverse`
 - `POST /commands/wish/start`
@@ -1022,6 +1025,15 @@ Command responses should include:
 ```
 
 Frontend should react to Effects instead of recalculating the domain transition.
+
+`POST /api/commands/project/create` accepts `title`, `scale`, optional
+`deadline`, and a nonempty ordered `milestones` array. Each entry accepts
+`title` and optional `dueDate`. Dates use `YYYY-MM-DD` or null.
+The authenticated `create_project` RPC derives ownership from `auth.uid()`
+and returns the persisted active Project and pending Milestones in request
+order. The API returns HTTP 201 and the `project_created` effect. Each
+accepted request creates a distinct Project. The client sends one request
+and provides no automatic retry.
 
 ---
 
