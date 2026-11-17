@@ -24,3 +24,4 @@ export { cancelDailyItemRequestSchema } from "./cancel-daily-item";
 export { createWishRequestSchema, createdWishSchema } from "./create-wish";
 export { wishCoverRequestSchema } from "./wish-cover";
 export { startWishRequestSchema, wishLifecycleSchema, startWishResponseSchema } from "./start-wish";
+export { createProjectRequestSchema, createdProjectDataSchema } from "./create-project";
