@@ -227,7 +227,14 @@ Fields:
 - updated_at
 - completed_at nullable
 
-`reward_pool` should be snapshotted from Scale at creation to protect historical rule changes.
+The database snapshots `reward_pool` at insert from Scale (small 4, medium 8,
+large 16, major 24). Read the stored value so future rule changes do not
+affect existing Projects.
+
+The Project creation command (RP-M4-02) requires a nonempty initial Milestone
+list. The server derives ownership from the authenticated user and writes the
+Project and all initial Milestones in one transaction. Use the inserted
+Project's stored `reward_pool` for the initial allocation.
 
 ### 6.4 milestones
 
@@ -261,6 +268,12 @@ Fields:
 Task is one global object.
 
 Do not duplicate a Task for Today / Week / Project views.
+
+Task Project and Milestone links are optional and must share the Task owner.
+When both are set, the Milestone must belong to the linked Project. Next
+Action points to an existing Task with the same owner. Deleting that Task
+clears the pointer. The Milestone owner key is available to the future
+reward source commands.
 
 ### 6.6 planning_items
 

@@ -724,15 +724,26 @@ Status: TODO
 
 Acceptance Criteria:
 
-- Project requires at least one Milestone by creation flow
-- Scale maps to reward pool
-- reward pool is snapshotted
+- Project creation requires a nonempty initial Milestone list in RP-M4-02
+- Scale maps to a stored reward pool snapshot at Project insertion
+- Owned Project, Milestone, Task, and Next Action links are enforced by foreign keys
+- RLS restricts Project and Milestone reads to the authenticated owner
+
+The migration and six affected Task fixtures passed local static checks.
+Dev run `850e8d94-ad4b-4a4a-b5a8-d0cfadab7371` passed schema deployment,
+two-account acceptance and independent cleanup of 13 owner tables.
+The 30 isolated pgTAP assertions remain **NOT TESTED**.
+See the [acceptance record](supabase/tests/RP-M4-01.md).
 
 ---
 
 ## RP-M4-02 — Project creation
 
 Status: TODO
+
+Require at least one Milestone in the creation request. Create the Project and
+the initial Milestones in a single transaction, with ownership derived from the
+authenticated user. Allocate from the Project's stored reward pool.
 
 Scale values:
 

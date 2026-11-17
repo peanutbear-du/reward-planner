@@ -19,10 +19,15 @@ insert into auth.users(id,email) values
 insert into public.user_settings(user_id,timezone) values
  ('00000000-0000-4000-8000-000000000601','UTC'),('00000000-0000-4000-8000-000000000602','UTC');
 create temp table fixture_tasks as select i,gen_random_uuid() id from generate_series(1,24) i where i<=17 or i>=21;
+insert into public.projects (id, user_id, title, scale) values
+  ('20000000-0000-4000-8000-000000000616', '00000000-0000-4000-8000-000000000601', 'Fixture Project', 'small');
+insert into public.milestones (id, user_id, project_id, title, reward_value) values
+  ('30000000-0000-4000-8000-000000000617', '00000000-0000-4000-8000-000000000601', '20000000-0000-4000-8000-000000000616', 'Fixture Milestone', 4);
+
 insert into public.tasks(id,user_id,title,status,completed_at,project_id,milestone_id)
 select id,case when i=14 then '00000000-0000-4000-8000-000000000602'::uuid else '00000000-0000-4000-8000-000000000601'::uuid end,
  'Global title '||i,case when i=15 then 'completed' else 'open' end,case when i=15 then now()-interval '1 day' else null end,
- case when i=16 then gen_random_uuid() else null end,case when i=17 then gen_random_uuid() else null end from fixture_tasks;
+ case when i=16 then '20000000-0000-4000-8000-000000000616'::uuid end,case when i=17 then '30000000-0000-4000-8000-000000000617'::uuid end from fixture_tasks;
 create temp table fixture_plans(i integer,id uuid,offset_days integer,status text);
 insert into fixture_plans values
  (1,'50000000-0000-4000-8000-000000000601',0,'committed'),
