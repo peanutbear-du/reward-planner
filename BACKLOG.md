@@ -739,7 +739,7 @@ See the [acceptance record](supabase/tests/RP-M4-01.md).
 
 ## RP-M4-02 — Project creation
 
-Status: TODO
+Status: IN PROGRESS
 
 Require at least one Milestone in the creation request. Create the Project and
 the initial Milestones in a single transaction, with ownership derived from the
@@ -756,6 +756,9 @@ Default Milestone allocation:
 
 - even distribution
 - remainder to final Milestone
+
+Local application verification and remaining database checks are recorded in
+the [RP-M4-02 acceptance record](supabase/tests/RP-M4-02.md).
 
 ---
 
