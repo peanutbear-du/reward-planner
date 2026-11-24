@@ -36,3 +36,4 @@ export type { WishCoverRequest, UploadWishCoverResponse, WishCoverUrlResponse, W
 export type { StartWishRequest, StartWishResponse, StartWishEffect, StartWishErrorCode, WishLifecycleDto, WishLifecycleStatus } from "./start-wish";
 export type { WishBoardResponse, WishBoardWish } from "./wish-board";
 export type { ProjectScale, InitialMilestoneRequest, CreateProjectRequest, CreatedProjectDto, InitialMilestoneDto, CreateProjectResponse, CreateProjectErrorCode } from "./create-project";
+export type { ProjectOverview, ProjectStatus, ProjectsResponse } from "./project-overview";

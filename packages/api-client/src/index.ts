@@ -37,3 +37,4 @@ export type { StartWishOptions } from "./start-wish";
 export { getWishBoard } from "./wish-board";
 export { createProject, CreateProjectApiClientError } from "./create-project";
 export type { CreateProjectOptions } from "./create-project";
+export { getProjects } from "./project-overview";
