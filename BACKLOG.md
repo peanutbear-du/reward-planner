@@ -764,7 +764,7 @@ the [RP-M4-02 acceptance record](supabase/tests/RP-M4-02.md).
 
 ## RP-M4-03 — Project Overview UI
 
-Status: IN PROGRESS
+Status: DONE
 
 Show:
 
