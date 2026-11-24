@@ -764,7 +764,7 @@ the [RP-M4-02 acceptance record](supabase/tests/RP-M4-02.md).
 
 ## RP-M4-03 — Project Overview UI
 
-Status: TODO
+Status: IN PROGRESS
 
 Show:
 
@@ -776,6 +776,10 @@ Show:
 - activity pulse
 
 Do not show completion percentage.
+
+The overview displays “活动记录待接入” until RP-M4-09 supplies real activity data.
+
+Dev API and browser acceptance passed. See the [RP-M4-03 acceptance record](supabase/tests/RP-M4-03.md).
 
 ---
 

@@ -12,6 +12,20 @@ const WishBoardPage = lazy(() =>
   import("./wish/WishBoardPage").then((module) => ({ default: module.WishBoardPage })),
 );
 
+const ProjectOverviewPage = lazy(() =>
+  import("./project/ProjectOverviewPage").then((module) => ({ default: module.ProjectOverviewPage })),
+);
+
+function currentPage() {
+  switch (window.location.hash) {
+    case "#projects": return "projects";
+    case "#wish-board": return "wish-board";
+    default: return "today";
+  }
+}
+
+const pageLabels = { today: "每日计划", projects: "项目", "wish-board": "愿望板" };
+
 function subscribeToNavigation(callback: () => void) {
   window.addEventListener("hashchange", callback);
   return () => window.removeEventListener("hashchange", callback);
@@ -19,7 +33,7 @@ function subscribeToNavigation(callback: () => void) {
 
 export function App() {
   const { error: sessionError, isLoading, session } = useAuthSession();
-  const wishBoard = useSyncExternalStore(subscribeToNavigation, () => window.location.hash === "#wish-board");
+  const page = useSyncExternalStore(subscribeToNavigation, currentPage);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
 
@@ -58,13 +72,13 @@ export function App() {
 
   return (
     <div className="app-shell">
-      <DesktopSidebar page={wishBoard ? "wish-board" : "today"} email={session.user.email} isSigningOut={isSigningOut}
+      <DesktopSidebar page={page} email={session.user.email} isSigningOut={isSigningOut}
         signOutError={signOutError} onSignOut={() => { void handleSignOut(); }} />
 
-      <Suspense fallback={<main className="main-content" role="status">正在加载{wishBoard ? "愿望板" : "每日计划"}…</main>}>
-        {wishBoard
-          ? <WishBoardPage key={session.user.id} accessToken={session.access_token} />
-          : <TodayPage key={session.user.id} accessToken={session.access_token} />}
+      <Suspense fallback={<main className="main-content" role="status">正在加载{pageLabels[page]}…</main>}>
+        {page === "projects" && <ProjectOverviewPage key={session.user.id} accessToken={session.access_token} />}
+        {page === "wish-board" && <WishBoardPage key={session.user.id} accessToken={session.access_token} />}
+        {page === "today" && <TodayPage key={session.user.id} accessToken={session.access_token} />}
       </Suspense>
     </div>
   );

@@ -1,5 +1,5 @@
 interface DesktopSidebarProps {
-  page?: "today" | "wish-board";
+  page?: "today" | "projects" | "wish-board";
   email?: string;
   isSigningOut: boolean;
   signOutError: string | null;
@@ -13,7 +13,8 @@ export function DesktopSidebar({ page = "today", email, isSigningOut, signOutErr
     <nav className="primary-nav" aria-label="主导航">
       <a className={page === "today" ? "nav-item nav-selected" : "nav-item"}
         aria-current={page === "today" ? "page" : undefined} href="#today">计划</a>
-      <span className="nav-item" aria-disabled="true" title="项目尚未开放">项目</span>
+      <a className={page === "projects" ? "nav-item nav-selected" : "nav-item"}
+        aria-current={page === "projects" ? "page" : undefined} href="#projects">项目</a>
       <a className={page === "wish-board" ? "nav-item nav-selected" : "nav-item"}
         aria-current={page === "wish-board" ? "page" : undefined} href="#wish-board">愿望板</a>
       <span className="nav-item" aria-disabled="true" title="回顾尚未开放">回顾</span>

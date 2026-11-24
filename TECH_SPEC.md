@@ -987,7 +987,7 @@ Use:
 - `GET /today`
 - `GET /week`
 - `GET /month`
-- `GET /projects`
+- `GET /api/projects`
 - `GET /projects/:id`
 - `GET /wish-board`
 - `GET /review/month`
@@ -1009,6 +1009,15 @@ Use:
 - `POST /commands/wish/redeem`
 
 Exact paths may evolve.
+
+`GET /api/projects` uses the verified user's JWT for owner-scoped reads.
+The optional `status` selects active, paused, or completed Projects. Results
+are ordered by Project ID ascending. Pass the returned `nextCursor` as
+`cursor` to read the next page. `limit` defaults to 20 and accepts 1–50.
+The query embeds each row's referenced Next Action Task and the first pending
+Milestone by `due_date ASC NULLS LAST, created_at ASC, id ASC`. This ordering
+serves the overview. Initial reward allocation uses request order.
+Deadlines and due dates are date-only strings. Activity data follows RP-M4-09.
 
 Command responses should include:
 
